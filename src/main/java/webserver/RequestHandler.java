@@ -43,8 +43,21 @@ public class RequestHandler implements Runnable {
                 URL resource = Thread.currentThread().getContextClassLoader().getResource("./static" + fileName);
                 byte[] body = resource.openStream().readAllBytes();
                 DataOutputStream dos = new DataOutputStream(out);
-                response200Header(dos, body.length);
-                responseBody(dos, body);
+
+                // 콘텐츠 타입에 맞는 헤더 선택을 위한 분기
+                String type = fileName.split("\\.")[1];
+                if (type.equals("html")) {
+                    response200HtmlHeader(dos, body.length);
+                    responseBody(dos, body);
+                } else if (type.equals("css")) {
+                    response200CssHeader(dos, body.length);
+                    responseBody(dos, body);
+                } else if (type.equals("svg")) {
+                    response200SvgHeader(dos, body.length);
+                    responseBody(dos, body);
+                } else {
+                    logger.debug("Unknown file typ");
+                }
 
             } catch (IOException e) {
                 // TODO 파일 읽기 중 오류 발생 시 대응
@@ -56,10 +69,32 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200HtmlHeader(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    private void response200CssHeader(DataOutputStream dos, int lengthOfBodyContent) {
+        try {
+            dos.writeBytes("HTTP/1.1 200 OK \r\n");
+            dos.writeBytes("Content-Type: text/css;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    private void response200SvgHeader(DataOutputStream dos, int lengthOfBodyContent) {
+        try {
+            dos.writeBytes("HTTP/1.1 200 OK \r\n");
+            dos.writeBytes("Content-Type: image/svg+xml\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
