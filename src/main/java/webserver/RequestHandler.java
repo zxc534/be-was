@@ -54,36 +54,51 @@ public class RequestHandler implements Runnable {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             // TODO 불완전한 메시지가 들어온 경우 처리 (헤더가 완성되지 않음)
-            logger.debug("====== HTTP Request Header ======");
             BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             ArrayList<String> header = new ArrayList<>();
             while (true) {
                 String line = br.readLine();
                 header.add(line);
-                logger.debug(line);
                 if (line.isEmpty()) break;
             }
-            logger.debug("=================================");
+
+            // 헤더 모아서 한번에 출력
+            StringBuilder sb = new StringBuilder();
+            sb.append("\n====== HTTP Request Header ======\n");
+            for (String s : header) { sb.append(s).append("\n"); }
+            sb.append("=================================\n");
+            logger.debug(sb.toString());
 
             String[] tokens = header.get(0).split(" ");
             String fileName = tokens[1];
             logger.debug("Find {}", fileName);
 
             // TODO 파일 복사하지 않고 바로 흘려보내기
-            // 파일을 찾아서 body에 담아둠
-            URL resource = Thread.currentThread().getContextClassLoader().getResource("./static" + fileName);
-            byte[] body = resource.openStream().readAllBytes();
-            DataOutputStream dos = new DataOutputStream(out);
-
-            String fileType = fileName.split("\\.")[1];
-            String contentType = contentTypeMap.get(fileType);
-            if (contentType != null) {
-                response200Header(dos, contentType, body.length);
-                responseBody(dos, body);
+            // 파일을 찾기 분기: 파일 or 디렉토리 => registration/index.html
+            URL resource;
+            if (fileName.contains(".")) {
+                resource = Thread.currentThread().getContextClassLoader().getResource("./static" + fileName);
             } else {
-                logger.debug("Unknown file type");
+                resource = Thread.currentThread().getContextClassLoader().getResource("./static" + fileName + "/index.html");
+                fileName = "index.html";
             }
 
+            // 파일을 찾음 => body에 데이터 복사 => stream에 흘려보냄
+            if (resource != null) {
+                InputStream is = resource.openStream();
+                byte[] body = is.readAllBytes();
+                is.close();
+                DataOutputStream dos = new DataOutputStream(out);
+
+                String fileType = fileName.split("\\.")[1];
+                String contentType = contentTypeMap.get(fileType);
+                if (contentType != null) {
+                    response200Header(dos, contentType, body.length);
+                    responseBody(dos, body);
+                } else {
+                    logger.debug("Unknown file type");
+                }
+            }
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
