@@ -6,7 +6,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
+import db.Database;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,35 +73,66 @@ public class RequestHandler implements Runnable {
             logger.debug(sb.toString());
 
             String[] tokens = header.get(0).split(" ");
-            String fileName = tokens[1];
-            logger.debug("Find {}", fileName);
+            String requestTarget = tokens[1];
+            logger.debug("Find {}", requestTarget);
 
             // TODO 파일 복사하지 않고 바로 흘려보내기
-            // 파일을 찾기 분기: 파일 or 디렉토리 => registration/index.html
-            URL resource;
-            if (fileName.contains(".")) {
-                resource = Thread.currentThread().getContextClassLoader().getResource("./static" + fileName);
+            // request target 분기
+            // 1) 요청 (/create?userId=zxc534)
+            // 2) 정적 파일 (/global.css) 
+            // 3) 디렉토리 (/registration => registration/index.html)
+
+            // TODO 스프링처럼 매핑하는 로직을 만들어야할 듯
+            if (requestTarget.split("\\?")[0].equals("/create")) {
+                try {
+                    String[] parameters = requestTarget.split("\\?")[1].split("&");
+                    Map<String, String> paramMap = new HashMap<>(4);
+
+                    for (String param : parameters) {
+                        String[] token = param.split("=");
+                        paramMap.put(token[0], token[1]);
+                    }
+
+                    // TODO NULL 체크
+                    // TODO handle 결과를 받아서 response 전송
+                    handleCreate(
+                            paramMap.get("userId"),
+                            paramMap.get("name"),
+                            paramMap.get("email"),
+                            paramMap.get("password")
+                            );
+                    printAllUsers();
+                } catch (Exception e) {
+                    //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
+                }
             } else {
-                resource = Thread.currentThread().getContextClassLoader().getResource("./static" + fileName + "/index.html");
-                fileName = "index.html";
-            }
-
-            // 파일을 찾음 => body에 데이터 복사 => stream에 흘려보냄
-            if (resource != null) {
-                InputStream is = resource.openStream();
-                byte[] body = is.readAllBytes();
-                is.close();
-                DataOutputStream dos = new DataOutputStream(out);
-
-                String fileType = fileName.split("\\.")[1];
-                String contentType = contentTypeMap.get(fileType);
-                if (contentType != null) {
-                    response200Header(dos, contentType, body.length);
-                    responseBody(dos, body);
+                URL resource;
+                if (requestTarget.contains(".")) {
+                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestTarget);
                 } else {
-                    logger.debug("Unknown file type");
+                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestTarget + "/index.html");
+                    requestTarget = "index.html";
+                }
+
+                // 파일을 찾음 => body에 데이터 복사 => stream에 흘려보냄
+                if (resource != null) {
+                    InputStream is = resource.openStream();
+                    byte[] body = is.readAllBytes();
+                    is.close();
+                    DataOutputStream dos = new DataOutputStream(out);
+
+                    String fileType = requestTarget.split("\\.")[1];
+                    String contentType = contentTypeMap.get(fileType);
+                    if (contentType != null) {
+                        response200Header(dos, contentType, body.length);
+                        responseBody(dos, body);
+                    } else {
+                        logger.debug("Unknown file type");
+                    }
                 }
             }
+
+
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
@@ -121,6 +155,18 @@ public class RequestHandler implements Runnable {
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             logger.error(e.getMessage());
+        }
+    }
+
+    private void handleCreate(String userId, String name, String email, String password) {
+        User user = new User(userId, password, name, email);
+        Database.addUser(user);
+    }
+
+    private void printAllUsers() {
+        logger.debug("==== USERS ====");
+        for (User user : Database.findAll()) {
+            logger.debug("{} {} {} {}", user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
         }
     }
 }
