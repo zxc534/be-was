@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import db.Database;
+import http.RequestMessage;
+import http.RequestMethod;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,25 +58,10 @@ public class RequestHandler implements Runnable {
         logger.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(), connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            // TODO 불완전한 메시지가 들어온 경우 처리 (헤더가 완성되지 않음)
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            ArrayList<String> header = new ArrayList<>();
-            while (true) {
-                String line = br.readLine();
-                header.add(line);
-                if (line.isEmpty()) break;
-            }
 
-            // 헤더 모아서 한번에 출력
-            StringBuilder sb = new StringBuilder();
-            sb.append("\n====== HTTP Request Header ======\n");
-            for (String s : header) { sb.append(s).append("\n"); }
-            sb.append("=================================\n");
-            logger.debug(sb.toString());
-
-            String[] tokens = header.get(0).split(" ");
-            String requestTarget = tokens[1];
-            logger.debug("Find {}", requestTarget);
+            InputStreamDecoder inputStreamDecoder = new InputStreamDecoder(in);
+            RequestMessage requestMessage = inputStreamDecoder.parseSingleMessage();
+            logger.debug(requestMessage.toString());
 
             // TODO 파일 복사하지 않고 바로 흘려보내기
             // request target 분기
