@@ -5,12 +5,25 @@ import java.util.Map;
 
 public class RequestMessage {
     String raw;
-    Map<String, String> header = new HashMap<>(20);
     RequestMethod method;
+    String requestTarget;
+    String httpVersion;
+    Map<String, String> header = new HashMap<>(20);
 
-    public RequestMessage() {
-        //TODO implement request header parsing logic
+    public RequestMessage() {}
 
+    public RequestMessage(RequestMethod method, String requestTarget, String httpVersion) {
+        this.method = method;
+        this.requestTarget = requestTarget;
+        this.httpVersion = httpVersion;
+    }
+
+    public void putHeader(String key, String value) {
+        header.put(key, value);
+    }
+
+    public String getHeader(String key) {
+        return header.get(key);
     }
 
     public String toString() {

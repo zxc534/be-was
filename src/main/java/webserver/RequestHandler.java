@@ -59,6 +59,7 @@ public class RequestHandler implements Runnable {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
 
+            // 파싱
             InputStreamDecoder inputStreamDecoder = new InputStreamDecoder(in);
             RequestMessage requestMessage = inputStreamDecoder.parseSingleMessage();
             logger.debug(requestMessage.toString());
@@ -118,8 +119,6 @@ public class RequestHandler implements Runnable {
                     }
                 }
             }
-
-
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
