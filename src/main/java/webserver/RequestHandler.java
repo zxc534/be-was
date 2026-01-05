@@ -5,9 +5,12 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import db.Database;
 import http.RequestMessage;
+import http.RequestMethod;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +20,16 @@ public class RequestHandler implements Runnable {
 
     private Socket connection;
 
-    private HashMap<String, String> contentTypeMap = new HashMap<>();
+    private Map<String, String> contentTypeMap = new HashMap<>();
+
+    private Map<String, Consumer<Map<String, String>>> getMap = new HashMap<>();
+    private Map<String, Consumer<Map<String, String>>> postMap = new HashMap<>();
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
+
+        // Path를 실제 동작 메소드와 연결
+        getMap.put("/create", this::handleCreate);
 
         // Content Type 해시 맵 초기화
         contentTypeMap.put("html", "text/html;charset=utf-8");
@@ -68,28 +77,9 @@ public class RequestHandler implements Runnable {
             // 3) 디렉토리 (/registration => registration/index.html)
 
             // TODO 스프링처럼 매핑하는 로직을 만들어야할 듯
+            handleRequest(requestMessage);
             if (requestMessage.requestTarget.split("\\?")[0].equals("/create")) {
-                try {
-                    String[] parameters = requestMessage.requestTarget.split("\\?")[1].split("&");
-                    Map<String, String> paramMap = new HashMap<>(4);
 
-                    for (String param : parameters) {
-                        String[] token = param.split("=");
-                        paramMap.put(token[0], token[1]);
-                    }
-
-                    // TODO NULL 체크
-                    // TODO handle 결과를 받아서 response 전송
-                    handleCreate(
-                            paramMap.get("userId"),
-                            paramMap.get("name"),
-                            paramMap.get("email"),
-                            paramMap.get("password")
-                            );
-                    printAllUsers();
-                } catch (Exception e) {
-                    //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
-                }
             } else {
                 URL resource;
                 if (requestMessage.requestTarget.contains(".")) {
@@ -141,7 +131,54 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private void handleCreate(String userId, String name, String email, String password) {
+    private Optional<String> handleRequest(RequestMessage req) {
+        try {
+            int qm = req.requestTarget.indexOf('?');
+            String path = req.requestTarget.substring(0, qm);
+            String query = req.requestTarget.substring(qm + 1);
+
+            // TODO split 파싱 로직 검토 필요
+            // 처음 나타나는 char를 기준으로 2개로 나누는 유틸 메소드
+            Map<String, String> params = new HashMap<>();
+            if (!query.isEmpty()) {
+                String[] pairs = query.split("&");
+                for (String param : pairs) {
+                    String[] pair = param.split("=");
+                    if (pair.length == 2) {
+                        params.put(pair[0], pair[1]);
+                    } else {
+                        params.put(pair[0], null);
+                    }
+                }
+            }
+
+            Consumer<Map<String, String>> action = null;
+            if (req.method == RequestMethod.GET) {
+                action = getMap.get(path);
+            } else if (req.method == RequestMethod.POST) {
+                action = postMap.get(path);
+            }
+
+            if (action == null) {
+                // path에 해당하는 action이 정의되어 있지 않음
+                // => 처리를 위임
+            } else {
+                // action을 찾음
+                action.accept(params);
+            }
+        } catch (Exception e) {
+            //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
+        }
+
+        return Optional.empty();
+    }
+
+    private void handleCreate(Map<String, String> params) {
+        String userId = params.get("userId");
+        String password = params.get("password");
+        String name = params.get("name");
+        String email= params.get("email");
+
         User user = new User(userId, password, name, email);
         Database.addUser(user);
     }
