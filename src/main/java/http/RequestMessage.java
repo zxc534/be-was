@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RequestMessage {
-    public String raw;
     public RequestMethod method;
     public String requestTarget;
     public String httpVersion;
@@ -27,6 +26,18 @@ public class RequestMessage {
     }
 
     public String toString() {
-        return raw;
+        StringBuilder sb = new StringBuilder();
+        sb.append("====== HTTP Request Message ======\n")
+                .append(method).append(" ")
+                .append(requestTarget).append(" ")
+                .append(httpVersion).append("\r\n");
+
+        for (String fieldName : header.keySet()) {
+            String fieldValue = header.get(fieldName);
+            sb.append(fieldName).append(": ").append(fieldValue).append("\r\n");
+        }
+        sb.append("==================================\n");
+
+        return sb.toString();
     }
 }
