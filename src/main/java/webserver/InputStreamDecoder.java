@@ -6,11 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 
 // 메시지 input stream을 읽어서 메시지 인스턴스 생성
 public class InputStreamDecoder {
@@ -69,16 +67,5 @@ public class InputStreamDecoder {
         // TODO 메시지 파싱 실패 처리
         // 메시지만 출력하고 처리는 Handler로 위임해야함.
         return null;
-
-        // 헤더 모아서 한번에 출력
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("\n====== HTTP Request Header ======\n");
-//        for (String s : header) { sb.append(s).append("\n"); }
-//        sb.append("=================================\n");
-//        logger.debug(sb.toString());
-//
-//        String[] tokens = header.get(0).split(" ");
-//        String requestTarget = tokens[1];
-//        logger.debug("Find {}", requestTarget);
     }
 }

@@ -3,14 +3,11 @@ package webserver;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import db.Database;
 import http.RequestMessage;
-import http.RequestMethod;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
