@@ -71,9 +71,9 @@ public class RequestHandler implements Runnable {
             // 3) 디렉토리 (/registration => registration/index.html)
 
             // TODO 스프링처럼 매핑하는 로직을 만들어야할 듯
-            if (requestTarget.split("\\?")[0].equals("/create")) {
+            if (requestMessage.requestTarget.split("\\?")[0].equals("/create")) {
                 try {
-                    String[] parameters = requestTarget.split("\\?")[1].split("&");
+                    String[] parameters = requestMessage.requestTarget.split("\\?")[1].split("&");
                     Map<String, String> paramMap = new HashMap<>(4);
 
                     for (String param : parameters) {
@@ -95,11 +95,11 @@ public class RequestHandler implements Runnable {
                 }
             } else {
                 URL resource;
-                if (requestTarget.contains(".")) {
-                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestTarget);
+                if (requestMessage.requestTarget.contains(".")) {
+                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
                 } else {
-                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestTarget + "/index.html");
-                    requestTarget = "index.html";
+                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
+                    requestMessage.requestTarget = "index.html";
                 }
 
                 // 파일을 찾음 => body에 데이터 복사 => stream에 흘려보냄
@@ -109,7 +109,7 @@ public class RequestHandler implements Runnable {
                     is.close();
                     DataOutputStream dos = new DataOutputStream(out);
 
-                    String fileType = requestTarget.split("\\.")[1];
+                    String fileType = requestMessage.requestTarget.split("\\.")[1];
                     String contentType = contentTypeMap.get(fileType);
                     if (contentType != null) {
                         response200Header(dos, contentType, body.length);

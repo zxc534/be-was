@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RequestMessage {
-    String raw;
-    RequestMethod method;
-    String requestTarget;
-    String httpVersion;
+    public String raw;
+    public RequestMethod method;
+    public String requestTarget;
+    public String httpVersion;
     Map<String, String> header = new HashMap<>(20);
 
     public RequestMessage() {}
