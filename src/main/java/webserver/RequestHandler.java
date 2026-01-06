@@ -30,7 +30,6 @@ public class RequestHandler implements Runnable {
 
         // Path를 Action과 연결
         getMap.put("/create", this::handleCreate);
-
     }
 
     public void run() {
@@ -58,7 +57,6 @@ public class RequestHandler implements Runnable {
                     requestMessage.requestTarget = "index.html";
                 }
 
-                logger.debug("resource: {}", resource);
                 // 파일을 찾음
                 if (resource != null) {
                     try {
@@ -125,11 +123,9 @@ public class RequestHandler implements Runnable {
             if (action == null) {
                 // path에 해당하는 action이 정의되어 있지 않음
                 // null 반환 => 처리를 위임
-                logger.debug("action not found");
                 return Optional.empty();
             } else {
                 // action을 실행하고 결과 반환
-                logger.debug("action found");
                 ResultCode code = action.apply(params);
                 return Optional.of(new Response(code));
             }
