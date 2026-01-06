@@ -53,21 +53,9 @@ public class RequestHandler implements Runnable {
         try {
             String[] splitted = Util.splitOnce(req.requestTarget, '?');
             String path = splitted[0];
-            String query = splitted[1];
+            String paramChunk = splitted[1];
 
-            // TODO split 유틸 메소드로 변경
-            Map<String, String> params = new HashMap<>();
-            if (!query.isEmpty()) {
-                String[] pairs = query.split("&");
-                for (String param : pairs) {
-                    String[] pair = param.split("=");
-                    if (pair.length == 2) {
-                        params.put(pair[0], pair[1]);
-                    } else {
-                        params.put(pair[0], null);
-                    }
-                }
-            }
+            Map<String, String> params = Util.parseParams(paramChunk);
 
             Function<Map<String, String>, ResultCode> action = null;
             if (req.method == RequestMethod.GET) {
