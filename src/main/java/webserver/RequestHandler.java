@@ -11,6 +11,7 @@ import java.util.function.Function;
 import db.Database;
 import http.RequestMessage;
 import http.RequestMethod;
+import http.Response;
 import http.ResultCode;
 import model.User;
 import org.slf4j.Logger;
@@ -80,8 +81,7 @@ public class RequestHandler implements Runnable {
 
             // 우선 정의된 Action이 있는지 확인
             // 있다면 Action을 실행하고 결과 반환, 없다면 null 반환
-            byte[] body = null;
-            ResultCode resultCode = handleRequest(requestMessage).orElse(() -> {
+            Response response = handleRequest(requestMessage).orElseGet(() -> {
                 // 기본 처리
                 URL resource;
                 if (requestMessage.requestTarget.contains(".")) {
@@ -90,23 +90,34 @@ public class RequestHandler implements Runnable {
                     resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
                     requestMessage.requestTarget = "index.html";
                 }
-                // 파일을 찾음 => body에 데이터 복사 => stream에 흘려보냄
-                if (resource != null) {
-                    InputStream is = resource.openStream();
-                    body = is.readAllBytes();
-                    is.close();
-                    DataOutputStream dos = new DataOutputStream(out);
 
-                    String fileType = requestMessage.requestTarget.split("\\.")[1];
-                    String contentType = contentTypeMap.get(fileType);
-                    if (contentType != null) {
-                        response200Header(dos, contentType, body.length);
-                        responseBody(dos, body);
-                    } else {
-                        logger.debug("Unknown file type");
+                // 파일을 찾음
+                if (resource != null) {
+                    try {
+                        Response rspWithFile = new Response(ResultCode.OK);
+                        InputStream is = resource.openStream();
+                        rspWithFile.body = is.readAllBytes();
+                        is.close();
+
+                        return rspWithFile;
+                    } catch (IOException e) {
+                        logger.debug(e.getMessage());
                     }
                 }
+
+                return new Response(ResultCode.NOT_FOUND);
             });
+
+            // 생성된 Response를 내보냄
+            DataOutputStream dos = new DataOutputStream(out);
+            String fileType = requestMessage.requestTarget.split("\\.")[1];
+            String contentType = contentTypeMap.get(fileType);
+            if (contentType != null) {
+                response200Header(dos, contentType, response.body.length);
+                responseBody(dos, response.body);
+            } else {
+                logger.debug("Unknown file type");
+            }
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
@@ -132,7 +143,7 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private Optional<ResultCode> handleRequest(RequestMessage req) {
+    private Optional<Response> handleRequest(RequestMessage req) {
         try {
             int qm = req.requestTarget.indexOf('?');
             String path = req.requestTarget.substring(0, qm);
@@ -168,13 +179,13 @@ public class RequestHandler implements Runnable {
             } else {
                 // action을 실행하고 결과 반환
                 ResultCode code = action.apply(params);
-                return Optional.of(code);
+                return Optional.of(new Response(code));
             }
         } catch (Exception e) {
             // TODO 500이 아닌 적절한 코드 반환
             //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
             logger.error(e.getMessage());
-            return Optional.of(ResultCode.INTERNAL_SERVER_ERROR);
+            return Optional.of(new Response(ResultCode.INTERNAL_SERVER_ERROR));
         }
     }
 
