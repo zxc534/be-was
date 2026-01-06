@@ -19,17 +19,10 @@ public class RequestHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
     private Socket connection;
+    private ActionMap actionMap;
 
-    // TODO !!! !!! !!! 1순위 !!! !!! !!! 현재는 요청 들어올 때 마다 액션 초기화 => 액션은 한번만 초기화하고 계속 사용하도록 클래스 분리
-    // Action Map
-    private final Map<String, Function<Map<String, String>, ResultCode>> getMap = new HashMap<>();
-    private final Map<String, Function<Map<String, String>, ResultCode>> postMap = new HashMap<>();
-
-    public RequestHandler(Socket connectionSocket) {
+    public RequestHandler(Socket connectionSocket, ActionMap actionMap) {
         this.connection = connectionSocket;
-
-        // Path를 Action과 연결
-        getMap.put("/create", this::handleCreate);
     }
 
     public void run() {
@@ -79,9 +72,9 @@ public class RequestHandler implements Runnable {
 
             Function<Map<String, String>, ResultCode> action = null;
             if (req.method == RequestMethod.GET) {
-                action = getMap.get(path);
+                action = actionMap.GET(path);
             } else if (req.method == RequestMethod.POST) {
-                action = postMap.get(path);
+                action = actionMap.POST(path);
             }
 
             // Action이 MAP에 없음
@@ -138,18 +131,6 @@ public class RequestHandler implements Runnable {
 
         // 파일을 찾지 못함
         return Optional.empty();
-    }
-
-    private ResultCode handleCreate(Map<String, String> params) {
-        String userId = params.get("userId");
-        String password = params.get("password");
-        String name = params.get("name");
-        String email= params.get("email");
-
-        User user = new User(userId, password, name, email);
-        Database.addUser(user);
-
-        return ResultCode.OK;
     }
 
     private void printAllUsers() {
