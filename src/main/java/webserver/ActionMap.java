@@ -46,7 +46,7 @@ public class ActionMap {
     }
 
     private ResultCode createUser(Map<String, String> params) {
-
+        return ResultCode.OK;
     }
 
     private void printAllUsers() {

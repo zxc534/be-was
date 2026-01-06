@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -14,9 +15,11 @@ import java.nio.charset.StandardCharsets;
 public class InputStreamDecoder {
     private static final Logger logger = LoggerFactory.getLogger(InputStreamDecoder.class);
 
+    private final InputStream inputStream;
     private final BufferedReader bufferedReader;
 
     public InputStreamDecoder(InputStream in) {
+        this.inputStream = in;
         bufferedReader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
     }
 
@@ -55,6 +58,18 @@ public class InputStreamDecoder {
                     msg.putHeader(fieldName, fieldValue);
                 } catch (IllegalArgumentException e) {
                     logger.error(e.getMessage());
+                }
+            }
+
+            String strLen = msg.getHeader("Content-Length");
+            int contentLength = (strLen != null) ? Integer.parseInt(strLen) : 0;
+            if (contentLength > 0) {
+                msg.body = new byte[contentLength];
+                int offset = 0;
+                while (offset < contentLength) {
+                    int r = inputStream.read(msg.body, offset, contentLength - offset);
+                    if (r == -1) throw new EOFException("Stream ended before reading Content-Length bytes");
+                    offset += r;
                 }
             }
 

@@ -1,5 +1,6 @@
 package http;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ public class RequestMessage {
     public String requestTarget;
     public String httpVersion;
     Map<String, String> header = new HashMap<>(20);
+    public byte[] body;
 
     public RequestMessage() {}
 
@@ -36,6 +38,10 @@ public class RequestMessage {
         for (String fieldName : header.keySet()) {
             String fieldValue = header.get(fieldName);
             sb.append(fieldName).append(": ").append(fieldValue).append("\r\n");
+        }
+        if (body != null) {
+            sb.append("================BODY==============\n");
+            sb.append(new String(body, StandardCharsets.UTF_8));
         }
         sb.append("==================================\n");
 
