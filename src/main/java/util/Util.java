@@ -1,6 +1,8 @@
-public final class Utils {
+package util;
 
-    private Utils() {}
+public final class Util {
+
+    private Util() {}
 
     public static String[] splitOnce(String text, char delimiter) {
         int idx = text.indexOf(delimiter);

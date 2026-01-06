@@ -13,6 +13,7 @@ import http.*;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Util;
 
 public class RequestHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
@@ -62,6 +63,7 @@ public class RequestHandler implements Runnable {
                 if (resource != null) {
                     try {
                         Response rspWithFile = new Response();
+                        rspWithFile.resultCode = ResultCode.OK;
                         rspWithFile.contentType = ContentType.fromFileName(requestMessage.requestTarget);
                         if (rspWithFile.contentType == null) {
                             // TODO 적절한 처리 필요
@@ -94,13 +96,11 @@ public class RequestHandler implements Runnable {
 
     private Optional<Response> handleRequest(RequestMessage req) {
         try {
-            int qm = req.requestTarget.indexOf('?');
-            String path = req.requestTarget.substring(0, qm);
-            String query = req.requestTarget.substring(qm + 1);
+            String[] splitted = Util.splitOnce(req.requestTarget, '?');
+            String path = splitted[0];
+            String query = splitted[1];
 
-            logger.debug(" !!! flag !!! ");
-            // TODO split 파싱 로직 검토 필요
-            // 처음 나타나는 char를 기준으로 2개로 나누는 유틸 메소드
+            // TODO split 유틸 메소드로 변경
             Map<String, String> params = new HashMap<>();
             if (!query.isEmpty()) {
                 String[] pairs = query.split("&");
