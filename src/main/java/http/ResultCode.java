@@ -1,21 +1,34 @@
 package http;
 
 public enum ResultCode {
-    OK(200),
-    CREATED(201),
-    ACCEPTED(202),
-    MULTIPLE_CHOICE(300),
-    MOVED_PERMANENTLY(301),
-    FOUND(302),
-    BAD_REQUEST(400),
-    UNAUTHORIZED(401),
-    FORBIDDEN(403),
-    NOT_FOUND(404),
-    INTERNAL_SERVER_ERROR(500)
-    ;
+    OK(200, "OK"),
+    CREATED(201, "Created"),
+    ACCEPTED(202, "Accepted"),
 
-    private final int num;
-    ResultCode(int num) {
-        this.num = num;
+    MULTIPLE_CHOICE(300, "Multiple Choice"),
+    MOVED_PERMANENTLY(301, "Moved Permanently"),
+    FOUND(302, "Found"),
+
+    BAD_REQUEST(400, "Bad Request"),
+    UNAUTHORIZED(401, "Unauthorized"),
+    FORBIDDEN(403, "Forbidden"),
+    NOT_FOUND(404, "Not Found"),
+
+    INTERNAL_SERVER_ERROR(500, "Internal Server Error");
+
+    private final int code;
+    private final String text;
+
+    ResultCode(int code, String text) {
+        this.code = code;
+        this.text = text;
+    }
+
+    public int code() {
+        return code;
+    }
+
+    public String text() {
+        return text;
     }
 }

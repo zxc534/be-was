@@ -88,34 +88,7 @@ public class RequestHandler implements Runnable {
 
             // 생성된 Response를 내보냄
             DataOutputStream dos = new DataOutputStream(out);
-            String fileType = requestMessage.requestTarget.split("\\.")[1];
-            String contentType = contentTypeMap.get(fileType);
-            if (contentType != null) {
-                response200Header(dos, contentType, response.body.length);
-                responseBody(dos, response.body);
-            } else {
-                logger.debug("Unknown file type");
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    private void responseBody(DataOutputStream dos, byte[] body) {
-        try {
-            dos.write(body, 0, body.length);
-            dos.flush();
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    private void response200Header(DataOutputStream dos, String contentType, int lengthOfBodyContent) {
-        try {
-            dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: " + contentType + "\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
-            dos.writeBytes("\r\n");
+            response.streamOutResponse(dos);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }

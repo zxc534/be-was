@@ -1,7 +1,6 @@
 package http;
 
 import java.util.Locale;
-import java.util.Optional;
 
 public enum ContentType {
     // Text / structured text
@@ -37,12 +36,12 @@ public enum ContentType {
 
     private final String mimeType;
 
-    ContentType(String mimeType) {
-        this.mimeType = mimeType;
-    }
-
     public String mimeType() {
         return mimeType;
+    }
+
+    ContentType(String mimeType) {
+        this.mimeType = mimeType;
     }
 
     //확장자(점 없이 "html" 또는 ".html") -> ContentType
