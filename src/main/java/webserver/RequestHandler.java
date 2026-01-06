@@ -6,11 +6,12 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 import db.Database;
 import http.RequestMessage;
 import http.RequestMethod;
+import http.ResultCode;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +23,8 @@ public class RequestHandler implements Runnable {
 
     private Map<String, String> contentTypeMap = new HashMap<>();
 
-    private Map<String, Consumer<Map<String, String>>> getMap = new HashMap<>();
-    private Map<String, Consumer<Map<String, String>>> postMap = new HashMap<>();
+    private Map<String, Function<Map<String, String>, ResultCode>> getMap = new HashMap<>();
+    private Map<String, Function<Map<String, String>, ResultCode>> postMap = new HashMap<>();
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
@@ -131,7 +132,7 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private Optional<String> handleRequest(RequestMessage req) {
+    private Optional<ResultCode> handleRequest(RequestMessage req) {
         try {
             int qm = req.requestTarget.indexOf('?');
             String path = req.requestTarget.substring(0, qm);
@@ -152,7 +153,7 @@ public class RequestHandler implements Runnable {
                 }
             }
 
-            Consumer<Map<String, String>> action = null;
+            Function<Map<String, String>, ResultCode> action = null;
             if (req.method == RequestMethod.GET) {
                 action = getMap.get(path);
             } else if (req.method == RequestMethod.POST) {
@@ -164,7 +165,7 @@ public class RequestHandler implements Runnable {
                 // => 처리를 위임
             } else {
                 // action을 찾음
-                action.accept(params);
+                ResultCode code = action.apply(params);
             }
         } catch (Exception e) {
             //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
@@ -173,7 +174,7 @@ public class RequestHandler implements Runnable {
         return Optional.empty();
     }
 
-    private void handleCreate(Map<String, String> params) {
+    private ResultCode handleCreate(Map<String, String> params) {
         String userId = params.get("userId");
         String password = params.get("password");
         String name = params.get("name");
@@ -181,6 +182,8 @@ public class RequestHandler implements Runnable {
 
         User user = new User(userId, password, name, email);
         Database.addUser(user);
+
+        return ResultCode.OK;
     }
 
     private void printAllUsers() {
