@@ -3,12 +3,15 @@ package webserver;
 import db.Database;
 import http.ResultCode;
 import model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 public class ActionMap {
+    private static final Logger logger = LoggerFactory.getLogger(ActionMap.class);
 
     // Action Map
     private final Map<String, Function<Map<String, String>, ResultCode>> GET = new HashMap<>();
@@ -16,7 +19,8 @@ public class ActionMap {
 
     public ActionMap() {
         // 이곳에서 액션을 정의
-        GET.put("/create", this::handleCreate);
+        //GET.put("/create", this::handleGetCreate);
+        POST.put("/create", this::createUser);
     }
 
     public Function<Map<String, String>, ResultCode> GET(String path) {
@@ -27,7 +31,7 @@ public class ActionMap {
         return POST.get(path);
     }
 
-    private ResultCode handleCreate(Map<String, String> params) {
+    private ResultCode handleGetCreate(Map<String, String> params) {
         String userId = params.get("userId");
         String password = params.get("password");
         String name = params.get("name");
@@ -36,6 +40,19 @@ public class ActionMap {
         User user = new User(userId, password, name, email);
         Database.addUser(user);
 
+        printAllUsers();
+
         return ResultCode.OK;
+    }
+
+    private ResultCode createUser(Map<String, String> params) {
+
+    }
+
+    private void printAllUsers() {
+        logger.debug("==== USERS ====");
+        for (User user : Database.findAll()) {
+            logger.debug(user.toString());
+        }
     }
 }

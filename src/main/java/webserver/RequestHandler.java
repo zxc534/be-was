@@ -8,9 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import db.Database;
 import http.*;
-import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Util;
@@ -18,11 +16,12 @@ import util.Util;
 public class RequestHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
-    private Socket connection;
-    private ActionMap actionMap;
+    private final Socket connection;
+    private final ActionMap actionMap;
 
     public RequestHandler(Socket connectionSocket, ActionMap actionMap) {
         this.connection = connectionSocket;
+        this.actionMap = actionMap;
     }
 
     public void run() {
@@ -131,12 +130,5 @@ public class RequestHandler implements Runnable {
 
         // 파일을 찾지 못함
         return Optional.empty();
-    }
-
-    private void printAllUsers() {
-        logger.debug("==== USERS ====");
-        for (User user : Database.findAll()) {
-            logger.debug("{} {} {} {}", user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
-        }
     }
 }
