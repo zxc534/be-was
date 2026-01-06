@@ -43,7 +43,7 @@ public class Response {
     private void responseHeader(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 " + resultCode.code() + " " + resultCode.text() + "\r\n");
-            if (this.contentType != null) dos.writeBytes("Content-Type: " + contentType + "\r\n");
+            if (this.contentType != null) dos.writeBytes("Content-Type: " + contentType.mimeType() + "\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
