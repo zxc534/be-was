@@ -20,7 +20,7 @@ public class ActionMap {
     public ActionMap() {
         // 이곳에서 액션을 정의
         //GET.put("/create", this::handleGetCreate);
-        POST.put("/create", this::createUser);
+        POST.put("/user/create", this::createUser);
     }
 
     public Function<Map<String, String>, ResultCode> GET(String path) {
