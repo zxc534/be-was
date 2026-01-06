@@ -9,10 +9,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import db.Database;
-import http.RequestMessage;
-import http.RequestMethod;
-import http.Response;
-import http.ResultCode;
+import http.*;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,11 +19,10 @@ public class RequestHandler implements Runnable {
 
     private Socket connection;
 
-    private Map<String, String> contentTypeMap = new HashMap<>();
-
+    // TODO !!! !!! !!! 1순위 !!! !!! !!! 현재는 요청 들어올 때 마다 액션 초기화 => 액션은 한번만 초기화하고 계속 사용하도록 클래스 분리
     // Action Map
-    private Map<String, Function<Map<String, String>, ResultCode>> getMap = new HashMap<>();
-    private Map<String, Function<Map<String, String>, ResultCode>> postMap = new HashMap<>();
+    private final Map<String, Function<Map<String, String>, ResultCode>> getMap = new HashMap<>();
+    private final Map<String, Function<Map<String, String>, ResultCode>> postMap = new HashMap<>();
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
@@ -34,33 +30,6 @@ public class RequestHandler implements Runnable {
         // Path를 Action과 연결
         getMap.put("/create", this::handleCreate);
 
-        // Content Type 해시 맵 초기화
-        contentTypeMap.put("html", "text/html;charset=utf-8");
-        contentTypeMap.put("css",  "text/css;charset=utf-8");
-        contentTypeMap.put("js",   "application/javascript;charset=utf-8");
-        contentTypeMap.put("json", "application/json;charset=utf-8");
-        contentTypeMap.put("xml",  "application/xml;charset=utf-8");
-        contentTypeMap.put("txt",  "text/plain;charset=utf-8");
-        contentTypeMap.put("csv",  "text/csv;charset=utf-8");
-        contentTypeMap.put("md",   "text/markdown;charset=utf-8");
-
-        contentTypeMap.put("svg",  "image/svg+xml");
-        contentTypeMap.put("png",  "image/png");
-        contentTypeMap.put("jpg",  "image/jpeg");
-        contentTypeMap.put("jpeg", "image/jpeg");
-        contentTypeMap.put("gif",  "image/gif");
-        contentTypeMap.put("webp", "image/webp");
-        contentTypeMap.put("ico",  "image/x-icon");
-
-        contentTypeMap.put("woff",  "font/woff");
-        contentTypeMap.put("woff2", "font/woff2");
-        contentTypeMap.put("ttf",   "font/ttf");
-        contentTypeMap.put("otf",   "font/otf");
-        contentTypeMap.put("eot",   "application/vnd.ms-fontobject");
-
-        contentTypeMap.put("pdf", "application/pdf");
-        contentTypeMap.put("wasm","application/wasm");
-        contentTypeMap.put("map", "application/json;charset=utf-8");
     }
 
     public void run() {
@@ -81,6 +50,7 @@ public class RequestHandler implements Runnable {
 
             // 우선 정의된 Action이 있는지 확인
             // 있다면 Action을 실행하고 결과 반환, 없다면 null 반환
+            // null이면 정적파일 탐색
             Response response = handleRequest(requestMessage).orElseGet(() -> {
                 // 기본 처리
                 URL resource;
@@ -94,17 +64,25 @@ public class RequestHandler implements Runnable {
                 // 파일을 찾음
                 if (resource != null) {
                     try {
-                        Response rspWithFile = new Response(ResultCode.OK);
+                        Response rspWithFile = new Response();
+                        rspWithFile.contentType = ContentType.fromFileName(requestMessage.requestTarget);
+                        if (rspWithFile.contentType == null) {
+                            // TODO 적절한 처리 필요
+                            // 파일은 찾았는데 확장자명에 대한 content type이 존재하지 않는 경우
+                            return new Response(ResultCode.INTERNAL_SERVER_ERROR);
+                        }
                         InputStream is = resource.openStream();
                         rspWithFile.body = is.readAllBytes();
                         is.close();
 
                         return rspWithFile;
                     } catch (IOException e) {
+                        // 파일 읽기 중 예외 발생 => 404 반환
                         logger.debug(e.getMessage());
                     }
                 }
 
+                // 파일을 찾지 못함
                 return new Response(ResultCode.NOT_FOUND);
             });
 

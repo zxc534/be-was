@@ -2,6 +2,7 @@ package http;
 
 public class Response {
     public ResultCode resultCode;
+    public ContentType contentType;
     public byte[] body;
 
     public Response() {};
