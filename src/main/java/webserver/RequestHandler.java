@@ -23,13 +23,14 @@ public class RequestHandler implements Runnable {
 
     private Map<String, String> contentTypeMap = new HashMap<>();
 
+    // Action Map
     private Map<String, Function<Map<String, String>, ResultCode>> getMap = new HashMap<>();
     private Map<String, Function<Map<String, String>, ResultCode>> postMap = new HashMap<>();
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
 
-        // Path를 실제 동작 메소드와 연결
+        // Path를 Action과 연결
         getMap.put("/create", this::handleCreate);
 
         // Content Type 해시 맵 초기화
@@ -77,11 +78,11 @@ public class RequestHandler implements Runnable {
             // 2) 정적 파일 (/global.css) 
             // 3) 디렉토리 (/registration => registration/index.html)
 
-            // TODO 스프링처럼 매핑하는 로직을 만들어야할 듯
-            handleRequest(requestMessage);
-            if (requestMessage.requestTarget.split("\\?")[0].equals("/create")) {
-
-            } else {
+            // 우선 정의된 Action이 있는지 확인
+            // 있다면 Action을 실행하고 결과 반환, 없다면 null 반환
+            byte[] body = null;
+            ResultCode resultCode = handleRequest(requestMessage).orElse(() -> {
+                // 기본 처리
                 URL resource;
                 if (requestMessage.requestTarget.contains(".")) {
                     resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
@@ -89,11 +90,10 @@ public class RequestHandler implements Runnable {
                     resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
                     requestMessage.requestTarget = "index.html";
                 }
-
                 // 파일을 찾음 => body에 데이터 복사 => stream에 흘려보냄
                 if (resource != null) {
                     InputStream is = resource.openStream();
-                    byte[] body = is.readAllBytes();
+                    body = is.readAllBytes();
                     is.close();
                     DataOutputStream dos = new DataOutputStream(out);
 
@@ -106,7 +106,7 @@ public class RequestHandler implements Runnable {
                         logger.debug("Unknown file type");
                     }
                 }
-            }
+            });
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
@@ -160,18 +160,22 @@ public class RequestHandler implements Runnable {
                 action = postMap.get(path);
             }
 
+            // Action이 MAP에 없음
             if (action == null) {
                 // path에 해당하는 action이 정의되어 있지 않음
-                // => 처리를 위임
+                // null 반환 => 처리를 위임
+                return Optional.empty();
             } else {
-                // action을 찾음
+                // action을 실행하고 결과 반환
                 ResultCode code = action.apply(params);
+                return Optional.of(code);
             }
         } catch (Exception e) {
+            // TODO 500이 아닌 적절한 코드 반환
             //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
+            logger.error(e.getMessage());
+            return Optional.of(ResultCode.INTERNAL_SERVER_ERROR);
         }
-
-        return Optional.empty();
     }
 
     private ResultCode handleCreate(Map<String, String> params) {
