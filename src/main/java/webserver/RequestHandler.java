@@ -42,46 +42,11 @@ public class RequestHandler implements Runnable {
             RequestMessage requestMessage = inputStreamDecoder.parseSingleMessage();
             logger.debug(requestMessage.toString());
 
-            // 우선 정의된 Action이 있는지 확인
-            // 있다면 Action을 실행하고 결과 반환, 없다면 null 반환
-            // null이면 정적파일 탐색
-            Response response = handleRequest(requestMessage).orElseGet(() -> {
-                // 기본 처리
-                URL resource;
-                if (requestMessage.requestTarget.contains(".")) {
-                    // 정적 파일
-                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
-                } else {
-                    // 디렉토리 => 경로/index.html
-                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
-                    requestMessage.requestTarget = "index.html";
-                }
-
-                // 파일을 찾음
-                if (resource != null) {
-                    try {
-                        Response rspWithFile = new Response();
-                        rspWithFile.resultCode = ResultCode.OK;
-                        rspWithFile.contentType = ContentType.fromFileName(requestMessage.requestTarget);
-                        if (rspWithFile.contentType == null) {
-                            // TODO 적절한 처리 필요
-                            // 파일은 찾았는데 확장자명에 대한 content type이 존재하지 않는 경우
-                            return new Response(ResultCode.INTERNAL_SERVER_ERROR);
-                        }
-                        InputStream is = resource.openStream();
-                        rspWithFile.body = is.readAllBytes();
-                        is.close();
-
-                        return rspWithFile;
-                    } catch (IOException e) {
-                        // 파일 읽기 중 예외 발생 => 404 반환
-                        logger.debug(e.getMessage());
-                    }
-                }
-
-                // 파일을 찾지 못함
-                return new Response(ResultCode.NOT_FOUND);
-            });
+            // 처리 순서: 정의된 Action->정적 파일->404 Not Found
+            Response response =
+                    handleAction(requestMessage)
+                    .or(() -> handleStaticFile(requestMessage))
+                    .orElseGet(() -> new Response(ResultCode.NOT_FOUND));
 
             // TODO 파일 복사하지 않고 바로 흘려보내기
             // 생성된 Response를 내보냄
@@ -92,7 +57,7 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private Optional<Response> handleRequest(RequestMessage req) {
+    private Optional<Response> handleAction(RequestMessage req) {
         try {
             String[] splitted = Util.splitOnce(req.requestTarget, '?');
             String path = splitted[0];
@@ -135,6 +100,44 @@ public class RequestHandler implements Runnable {
             logger.error(e.getMessage());
             return Optional.of(new Response(ResultCode.INTERNAL_SERVER_ERROR));
         }
+    }
+
+    private Optional<Response> handleStaticFile(RequestMessage requestMessage) {
+        // 기본 처리
+        URL resource;
+        if (requestMessage.requestTarget.contains(".")) {
+            // 정적 파일
+            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
+        } else {
+            // 디렉토리 => 경로/index.html
+            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
+            requestMessage.requestTarget = "index.html";
+        }
+
+        // 파일을 찾음
+        if (resource != null) {
+            try {
+                Response rspWithFile = new Response();
+                rspWithFile.resultCode = ResultCode.OK;
+                rspWithFile.contentType = ContentType.fromFileName(requestMessage.requestTarget);
+                if (rspWithFile.contentType == null) {
+                    // TODO 적절한 처리 필요
+                    // 파일은 찾았는데 확장자명에 대한 content type이 존재하지 않는 경우
+                    return Optional.of(new Response(ResultCode.INTERNAL_SERVER_ERROR));
+                }
+                InputStream is = resource.openStream();
+                rspWithFile.body = is.readAllBytes();
+                is.close();
+
+                return Optional.of(rspWithFile);
+            } catch (IOException e) {
+                // 파일 읽기 중 예외 발생 => 404 반환
+                logger.debug(e.getMessage());
+            }
+        }
+
+        // 파일을 찾지 못함
+        return Optional.empty();
     }
 
     private ResultCode handleCreate(Map<String, String> params) {
