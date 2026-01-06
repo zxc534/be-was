@@ -42,12 +42,6 @@ public class RequestHandler implements Runnable {
             RequestMessage requestMessage = inputStreamDecoder.parseSingleMessage();
             logger.debug(requestMessage.toString());
 
-            // TODO 파일 복사하지 않고 바로 흘려보내기
-            // request target 분기
-            // 1) 요청 (/create?userId=zxc534)
-            // 2) 정적 파일 (/global.css) 
-            // 3) 디렉토리 (/registration => registration/index.html)
-
             // 우선 정의된 Action이 있는지 확인
             // 있다면 Action을 실행하고 결과 반환, 없다면 null 반환
             // null이면 정적파일 탐색
@@ -55,12 +49,15 @@ public class RequestHandler implements Runnable {
                 // 기본 처리
                 URL resource;
                 if (requestMessage.requestTarget.contains(".")) {
+                    // 정적 파일
                     resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
                 } else {
+                    // 디렉토리 => 경로/index.html
                     resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
                     requestMessage.requestTarget = "index.html";
                 }
 
+                logger.debug("resource: {}", resource);
                 // 파일을 찾음
                 if (resource != null) {
                     try {
@@ -86,6 +83,7 @@ public class RequestHandler implements Runnable {
                 return new Response(ResultCode.NOT_FOUND);
             });
 
+            // TODO 파일 복사하지 않고 바로 흘려보내기
             // 생성된 Response를 내보냄
             DataOutputStream dos = new DataOutputStream(out);
             response.streamOutResponse(dos);
@@ -100,6 +98,7 @@ public class RequestHandler implements Runnable {
             String path = req.requestTarget.substring(0, qm);
             String query = req.requestTarget.substring(qm + 1);
 
+            logger.debug(" !!! flag !!! ");
             // TODO split 파싱 로직 검토 필요
             // 처음 나타나는 char를 기준으로 2개로 나누는 유틸 메소드
             Map<String, String> params = new HashMap<>();
@@ -126,9 +125,11 @@ public class RequestHandler implements Runnable {
             if (action == null) {
                 // path에 해당하는 action이 정의되어 있지 않음
                 // null 반환 => 처리를 위임
+                logger.debug("action not found");
                 return Optional.empty();
             } else {
                 // action을 실행하고 결과 반환
+                logger.debug("action found");
                 ResultCode code = action.apply(params);
                 return Optional.of(new Response(code));
             }

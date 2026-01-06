@@ -23,8 +23,12 @@ public class Response {
     }
 
     public void streamOutResponse(DataOutputStream dos) {
-        responseHeader(dos, contentType.mimeType(), body.length);
-        responseBody(dos, body);
+        if (this.body == null) {
+            responseHeader(dos, 0);
+        } else {
+            responseHeader(dos, body.length);
+            responseBody(dos, body);
+        }
     }
 
     private void responseBody(DataOutputStream dos, byte[] body) {
@@ -36,10 +40,10 @@ public class Response {
         }
     }
 
-    private void responseHeader(DataOutputStream dos, String contentType, int lengthOfBodyContent) {
+    private void responseHeader(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 " + resultCode.code() + " " + resultCode.text() + "\r\n\r\n");
-            dos.writeBytes("Content-Type: " + contentType + "\r\n");
+            if (this.contentType != null) dos.writeBytes("Content-Type: " + contentType + "\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
