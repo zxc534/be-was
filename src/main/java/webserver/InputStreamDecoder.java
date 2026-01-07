@@ -1,6 +1,6 @@
 package webserver;
 
-import http.RequestMessage;
+import http.Request;
 import http.RequestMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +18,7 @@ public class InputStreamDecoder {
         this.in = new BufferedInputStream(in);
     }
 
-    public RequestMessage parseSingleMessage() {
+    public Request parseSingleMessage() {
 
         // TODO 불완전한 메시지가 들어온 경우 처리 (헤더가 완성되지 않음)
         try {
@@ -34,7 +34,7 @@ public class InputStreamDecoder {
             String requestTarget = firstLineTokens[1];
             String httpVersion = firstLineTokens[2];
 
-            RequestMessage msg = new RequestMessage(method, requestTarget, httpVersion);
+            Request msg = new Request(method, requestTarget, httpVersion);
 
             // 남은 헤더를 파싱, 빈 라인(\r\n\r\n) 만날 때 까지
             while (true) {

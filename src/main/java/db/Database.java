@@ -20,4 +20,12 @@ public class Database {
     public static Collection<User> findAll() {
         return users.values();
     }
+
+    // 로그인 정보 SessionId
+    // Map<sid, userId>
+    private static Map<String, String> sessions = new HashMap<>();
+
+    public static void addSession(String sid, String userId) { sessions.put(sid, userId); }
+
+    public static String findUserIdBySid(String sid) { return sessions.get(sid); }
 }

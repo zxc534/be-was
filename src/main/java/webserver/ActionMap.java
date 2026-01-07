@@ -1,52 +1,116 @@
 package webserver;
 
 import db.Database;
+import http.Request;
+import http.Response;
 import http.ResultCode;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Util;
 
+import javax.xml.crypto.Data;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class ActionMap {
     private static final Logger logger = LoggerFactory.getLogger(ActionMap.class);
 
     // Action Map
-    private final Map<String, Function<Map<String, String>, ResultCode>> GET = new HashMap<>();
-    private final Map<String, Function<Map<String, String>, ResultCode>> POST = new HashMap<>();
+    private final Map<String, Function<Request, Response>> GET = new HashMap<>();
+    private final Map<String, Function<Request, Response>> POST = new HashMap<>();
 
     public ActionMap() {
         // 이곳에서 액션을 정의
         //GET.put("/create", this::handleGetCreate);
         POST.put("/user/create", this::createUser);
+        POST.put("/user/login", this::loginUser);
     }
 
-    public Function<Map<String, String>, ResultCode> GET(String path) {
+    public Function<Request, Response> GET(String path) {
         return GET.get(path);
     }
-
-    public Function<Map<String, String>, ResultCode> POST(String path) {
+    public Function<Request, Response> POST(String path) {
         return POST.get(path);
     }
 
-    private ResultCode handleGetCreate(Map<String, String> params) {
-        String userId = params.get("userId");
-        String password = params.get("password");
-        String name = params.get("name");
-        String email= params.get("email");
+//    private ResultCode handleGetCreate(Map<String, String> params) {
+//        String userId = params.get("userId");
+//        String password = params.get("password");
+//        String name = params.get("name");
+//        String email= params.get("email");
+//
+//        User user = new User(userId, password, name, email);
+//        Database.addUser(user);
+//
+//        printAllUsers();
+//
+//        return ResultCode.OK;
+//    }
 
-        User user = new User(userId, password, name, email);
-        Database.addUser(user);
+    private Response createUser(Request req) {
+        try {
+            // 회원가입 정상 처리
+            String body = new String(req.body, StandardCharsets.UTF_8);
+            req.params = Util.parseParams(body);
 
-        printAllUsers();
+            String userId = req.params.get("userId");
+            String password = req.params.get("password");
+            String name = req.params.get("name");
+            String email= req.params.get("email");
 
-        return ResultCode.OK;
+            User user = new User(userId, password, name, email);
+            Database.addUser(user);
+            printAllUsers();
+
+            // 리다이렉트 응답
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.FOUND;
+            rsp.header.add("Location: /index.html");
+            return rsp;
+        } catch (Exception e) {
+            // 회원가입 처리중 에러 발생
+            logger.error(e.getMessage());
+            return new Response(ResultCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    private ResultCode createUser(Map<String, String> params) {
-        return ResultCode.OK;
+    private Response loginUser(Request req) {
+        try {
+            // TODO contentType이 urlendcoded 일 때, body를 파싱해서 Params에 넣는 것 자동으로?
+            String body = new String(req.body, StandardCharsets.UTF_8);
+            req.params = Util.parseParams(body);
+
+            String userId = req.params.get("userId");
+            String password = req.params.get("password");
+
+            User user = Database.findUserById(userId);
+
+            if (user != null) {
+                if (user.getPassword().equals(password)) {
+                    // 로그인 성공
+                    // Session ID를 쿠키로 설정, 메인 페이지로 리다이렉트
+                    String sid = UUID.randomUUID().toString();
+                    Database.addSession(sid, userId);
+
+                    Response rsp = new Response(ResultCode.FOUND);
+                    rsp.header.add("Set-Cookie: sid=" + sid + "; Path=/");
+                    rsp.header.add("Location: /index.html");
+                    return rsp;
+                }
+            }
+
+            // 실패 응답 (존재하지 않는 userId 또는 password 불일치)
+            return new Response(ResultCode.UNAUTHORIZED);
+        } catch (Exception e) {
+            // TODO 액션을 인터페이스로 묶고 에러 핸들링을 공통으로 처리할 수 있지 않을까?
+            // 로그인 처리중 에러 발생
+            logger.error(e.getMessage());
+            return new Response(ResultCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private void printAllUsers() {
