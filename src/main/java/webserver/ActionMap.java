@@ -1,7 +1,6 @@
 package webserver;
 
 import db.Database;
-import http.ContentType;
 import http.Request;
 import http.Response;
 import http.ResultCode;
@@ -13,6 +12,7 @@ import util.Util;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class ActionMap {
@@ -26,6 +26,7 @@ public class ActionMap {
         // 이곳에서 액션을 정의
         //GET.put("/create", this::handleGetCreate);
         POST.put("/user/create", this::createUser);
+        POST.put("/user/login", this::loginUser);
     }
 
     public Function<Request, Response> GET(String path) {
@@ -78,7 +79,30 @@ public class ActionMap {
 
     private Response loginUser(Request req) {
         try {
-            return null;
+            // TODO contentType이 urlendcoded 일 때, body를 파싱해서 Params에 넣는 것 자동으로?
+            String body = new String(req.body, StandardCharsets.UTF_8);
+            req.params = Util.parseParams(body);
+
+            String userId = req.params.get("userId");
+            String password = req.params.get("password");
+
+            User user = Database.findUserById(userId);
+
+            if (user != null) {
+                if (user.getPassword().equals(password)) {
+                    // 로그인 성공
+                    // Session ID를 쿠키로 설정, 메인 페이지로 리다이렉트
+                    String sid = UUID.randomUUID().toString();
+
+                    Response rsp = new Response(ResultCode.FOUND);
+                    rsp.header.add("Set-Cookie: sid=" + sid + "; Path=/");
+                    rsp.header.add("Location: /index.html");
+                    return rsp;
+                }
+            }
+
+            // 실패 응답 (존재하지 않는 userId 또는 password 불일치)
+            return new Response(ResultCode.UNAUTHORIZED);
         } catch (Exception e) {
             // TODO 액션을 인터페이스로 묶고 에러 핸들링을 공통으로 처리할 수 있지 않을까?
             // 로그인 처리중 에러 발생
