@@ -76,6 +76,17 @@ public class ActionMap {
         }
     }
 
+    private Response loginUser(Request req) {
+        try {
+            return null;
+        } catch (Exception e) {
+            // TODO 액션을 인터페이스로 묶고 에러 핸들링을 공통으로 처리할 수 있지 않을까?
+            // 로그인 처리중 에러 발생
+            logger.error(e.getMessage());
+            return new Response(ResultCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private void printAllUsers() {
         logger.debug("==== USERS ====");
         for (User user : Database.findAll()) {
