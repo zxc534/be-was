@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class Response {
@@ -12,7 +14,7 @@ public class Response {
 
     public ResultCode resultCode;
     public ContentType contentType;
-    public Map<String, String> header;
+    public List<String> header = new LinkedList<>();
     public byte[] body;
 
     public Response() {};
@@ -44,6 +46,9 @@ public class Response {
             if (this.contentType != null) {
                 dos.writeBytes("Content-Type: " + contentType.mimeType() + "\r\n");
                 dos.writeBytes("Content-Length: " + body.length + "\r\n");
+            }
+            for (String h : header) {
+                dos.writeBytes(h + "\r\n");
             }
             dos.writeBytes("\r\n");
         } catch (IOException e) {
