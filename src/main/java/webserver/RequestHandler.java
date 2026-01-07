@@ -3,12 +3,14 @@ package webserver;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import db.Database;
+import http.RequestMessage;
+import http.RequestMethod;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +20,16 @@ public class RequestHandler implements Runnable {
 
     private Socket connection;
 
-    private HashMap<String, String> contentTypeMap = new HashMap<>();
+    private Map<String, String> contentTypeMap = new HashMap<>();
+
+    private Map<String, Consumer<Map<String, String>>> getMap = new HashMap<>();
+    private Map<String, Consumer<Map<String, String>>> postMap = new HashMap<>();
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
+
+        // Path를 실제 동작 메소드와 연결
+        getMap.put("/create", this::handleCreate);
 
         // Content Type 해시 맵 초기화
         contentTypeMap.put("html", "text/html;charset=utf-8");
@@ -56,25 +64,11 @@ public class RequestHandler implements Runnable {
         logger.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(), connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            // TODO 불완전한 메시지가 들어온 경우 처리 (헤더가 완성되지 않음)
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            ArrayList<String> header = new ArrayList<>();
-            while (true) {
-                String line = br.readLine();
-                header.add(line);
-                if (line.isEmpty()) break;
-            }
 
-            // 헤더 모아서 한번에 출력
-            StringBuilder sb = new StringBuilder();
-            sb.append("\n====== HTTP Request Header ======\n");
-            for (String s : header) { sb.append(s).append("\n"); }
-            sb.append("=================================\n");
-            logger.debug(sb.toString());
-
-            String[] tokens = header.get(0).split(" ");
-            String requestTarget = tokens[1];
-            logger.debug("Find {}", requestTarget);
+            // 파싱
+            InputStreamDecoder inputStreamDecoder = new InputStreamDecoder(in);
+            RequestMessage requestMessage = inputStreamDecoder.parseSingleMessage();
+            logger.debug(requestMessage.toString());
 
             // TODO 파일 복사하지 않고 바로 흘려보내기
             // request target 분기
@@ -83,35 +77,16 @@ public class RequestHandler implements Runnable {
             // 3) 디렉토리 (/registration => registration/index.html)
 
             // TODO 스프링처럼 매핑하는 로직을 만들어야할 듯
-            if (requestTarget.split("\\?")[0].equals("/create")) {
-                try {
-                    String[] parameters = requestTarget.split("\\?")[1].split("&");
-                    Map<String, String> paramMap = new HashMap<>(4);
+            handleRequest(requestMessage);
+            if (requestMessage.requestTarget.split("\\?")[0].equals("/create")) {
 
-                    for (String param : parameters) {
-                        String[] token = param.split("=");
-                        paramMap.put(token[0], token[1]);
-                    }
-
-                    // TODO NULL 체크
-                    // TODO handle 결과를 받아서 response 전송
-                    handleCreate(
-                            paramMap.get("userId"),
-                            paramMap.get("name"),
-                            paramMap.get("email"),
-                            paramMap.get("password")
-                            );
-                    printAllUsers();
-                } catch (Exception e) {
-                    //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
-                }
             } else {
                 URL resource;
-                if (requestTarget.contains(".")) {
-                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestTarget);
+                if (requestMessage.requestTarget.contains(".")) {
+                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
                 } else {
-                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestTarget + "/index.html");
-                    requestTarget = "index.html";
+                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
+                    requestMessage.requestTarget = "index.html";
                 }
 
                 // 파일을 찾음 => body에 데이터 복사 => stream에 흘려보냄
@@ -121,7 +96,7 @@ public class RequestHandler implements Runnable {
                     is.close();
                     DataOutputStream dos = new DataOutputStream(out);
 
-                    String fileType = requestTarget.split("\\.")[1];
+                    String fileType = requestMessage.requestTarget.split("\\.")[1];
                     String contentType = contentTypeMap.get(fileType);
                     if (contentType != null) {
                         response200Header(dos, contentType, body.length);
@@ -131,8 +106,6 @@ public class RequestHandler implements Runnable {
                     }
                 }
             }
-
-
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
@@ -158,7 +131,54 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private void handleCreate(String userId, String name, String email, String password) {
+    private Optional<String> handleRequest(RequestMessage req) {
+        try {
+            int qm = req.requestTarget.indexOf('?');
+            String path = req.requestTarget.substring(0, qm);
+            String query = req.requestTarget.substring(qm + 1);
+
+            // TODO split 파싱 로직 검토 필요
+            // 처음 나타나는 char를 기준으로 2개로 나누는 유틸 메소드
+            Map<String, String> params = new HashMap<>();
+            if (!query.isEmpty()) {
+                String[] pairs = query.split("&");
+                for (String param : pairs) {
+                    String[] pair = param.split("=");
+                    if (pair.length == 2) {
+                        params.put(pair[0], pair[1]);
+                    } else {
+                        params.put(pair[0], null);
+                    }
+                }
+            }
+
+            Consumer<Map<String, String>> action = null;
+            if (req.method == RequestMethod.GET) {
+                action = getMap.get(path);
+            } else if (req.method == RequestMethod.POST) {
+                action = postMap.get(path);
+            }
+
+            if (action == null) {
+                // path에 해당하는 action이 정의되어 있지 않음
+                // => 처리를 위임
+            } else {
+                // action을 찾음
+                action.accept(params);
+            }
+        } catch (Exception e) {
+            //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
+        }
+
+        return Optional.empty();
+    }
+
+    private void handleCreate(Map<String, String> params) {
+        String userId = params.get("userId");
+        String password = params.get("password");
+        String name = params.get("name");
+        String email= params.get("email");
+
         User user = new User(userId, password, name, email);
         Database.addUser(user);
     }
