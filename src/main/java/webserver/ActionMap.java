@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Util;
 
+import javax.xml.crypto.Data;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -93,6 +94,7 @@ public class ActionMap {
                     // 로그인 성공
                     // Session ID를 쿠키로 설정, 메인 페이지로 리다이렉트
                     String sid = UUID.randomUUID().toString();
+                    Database.addSession(sid, userId);
 
                     Response rsp = new Response(ResultCode.FOUND);
                     rsp.header.add("Set-Cookie: sid=" + sid + "; Path=/");
