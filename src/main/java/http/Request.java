@@ -4,16 +4,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RequestMessage {
+public class Request {
     public RequestMethod method;
     public String requestTarget;
     public String httpVersion;
     Map<String, String> header = new HashMap<>(20);
     public byte[] body;
 
-    public RequestMessage() {}
+    public Request() {}
 
-    public RequestMessage(RequestMethod method, String requestTarget, String httpVersion) {
+    public Request(RequestMethod method, String requestTarget, String httpVersion) {
         this.method = method;
         this.requestTarget = requestTarget;
         this.httpVersion = httpVersion;

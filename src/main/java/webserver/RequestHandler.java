@@ -3,7 +3,6 @@ package webserver;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -31,13 +30,13 @@ public class RequestHandler implements Runnable {
 
             // 파싱
             InputStreamDecoder inputStreamDecoder = new InputStreamDecoder(in);
-            RequestMessage requestMessage = inputStreamDecoder.parseSingleMessage();
-            logger.debug(requestMessage.toString());
+            Request request = inputStreamDecoder.parseSingleMessage();
+            logger.debug(request.toString());
 
             // 처리 순서: 정의된 Action->정적 파일->404 Not Found
             Response response =
-                    handleAction(requestMessage)
-                    .or(() -> handleStaticFile(requestMessage))
+                    handleAction(request)
+                    .or(() -> handleStaticFile(request))
                     .orElseGet(() -> new Response(ResultCode.NOT_FOUND));
 
             // TODO 파일 복사하지 않고 바로 흘려보내기
@@ -49,7 +48,7 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private Optional<Response> handleAction(RequestMessage req) {
+    private Optional<Response> handleAction(Request req) {
         try {
             String[] splitted = Util.splitOnce(req.requestTarget, '?');
             String path = splitted[0];
@@ -82,16 +81,16 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private Optional<Response> handleStaticFile(RequestMessage requestMessage) {
+    private Optional<Response> handleStaticFile(Request request) {
         // 기본 처리
         URL resource;
-        if (requestMessage.requestTarget.contains(".")) {
+        if (request.requestTarget.contains(".")) {
             // 정적 파일
-            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
+            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + request.requestTarget);
         } else {
             // 디렉토리 => 경로/index.html
-            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
-            requestMessage.requestTarget = "index.html";
+            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + request.requestTarget + "/index.html");
+            request.requestTarget = "index.html";
         }
 
         // 파일을 찾음
@@ -99,7 +98,7 @@ public class RequestHandler implements Runnable {
             try {
                 Response rspWithFile = new Response();
                 rspWithFile.resultCode = ResultCode.OK;
-                rspWithFile.contentType = ContentType.fromFileName(requestMessage.requestTarget);
+                rspWithFile.contentType = ContentType.fromFileName(request.requestTarget);
                 if (rspWithFile.contentType == null) {
                     // TODO 적절한 처리 필요
                     // 파일은 찾았는데 확장자명에 대한 content type이 존재하지 않는 경우

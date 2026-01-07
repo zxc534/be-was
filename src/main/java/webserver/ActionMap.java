@@ -1,6 +1,7 @@
 package webserver;
 
 import db.Database;
+import http.Response;
 import http.ResultCode;
 import model.User;
 import org.slf4j.Logger;
@@ -14,8 +15,8 @@ public class ActionMap {
     private static final Logger logger = LoggerFactory.getLogger(ActionMap.class);
 
     // Action Map
-    private final Map<String, Function<Map<String, String>, ResultCode>> GET = new HashMap<>();
-    private final Map<String, Function<Map<String, String>, ResultCode>> POST = new HashMap<>();
+    private final Map<String, Function<Request, Response>> GET = new HashMap<>();
+    private final Map<String, Function<Request, Response>> POST = new HashMap<>();
 
     public ActionMap() {
         // 이곳에서 액션을 정의
@@ -23,11 +24,10 @@ public class ActionMap {
         POST.put("/user/create", this::createUser);
     }
 
-    public Function<Map<String, String>, ResultCode> GET(String path) {
+    public Function<Request, Response> GET(String path) {
         return GET.get(path);
     }
-
-    public Function<Map<String, String>, ResultCode> POST(String path) {
+    public Function<Request, Response> POST(String path) {
         return POST.get(path);
     }
 
