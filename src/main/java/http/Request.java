@@ -8,7 +8,9 @@ public class Request {
     public RequestMethod method;
     public String requestTarget;
     public String httpVersion;
-    Map<String, String> header = new HashMap<>(20);
+
+    public Map<String, String> params = new HashMap<>();
+    public Map<String, String> header = new HashMap<>(20);
     public byte[] body;
 
     public Request() {}

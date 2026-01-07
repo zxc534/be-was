@@ -54,9 +54,9 @@ public class RequestHandler implements Runnable {
             String path = splitted[0];
             String paramChunk = splitted[1];
 
-            Map<String, String> params = Util.parseParams(paramChunk);
+            req.params = Util.parseParams(paramChunk);
 
-            Function<Map<String, String>, ResultCode> action = null;
+            Function<Request, Response> action = null;
             if (req.method == RequestMethod.GET) {
                 action = actionMap.GET(path);
             } else if (req.method == RequestMethod.POST) {
@@ -70,8 +70,8 @@ public class RequestHandler implements Runnable {
                 return Optional.empty();
             } else {
                 // action을 실행하고 결과 반환
-                ResultCode code = action.apply(params);
-                return Optional.of(new Response(code));
+                Response rsp = action.apply(req);
+                return Optional.of(rsp);
             }
         } catch (Exception e) {
             // TODO 500이 아닌 적절한 코드 반환

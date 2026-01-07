@@ -1,12 +1,15 @@
 package webserver;
 
 import db.Database;
+import http.Request;
 import http.Response;
 import http.ResultCode;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -31,22 +34,43 @@ public class ActionMap {
         return POST.get(path);
     }
 
-    private ResultCode handleGetCreate(Map<String, String> params) {
-        String userId = params.get("userId");
-        String password = params.get("password");
-        String name = params.get("name");
-        String email= params.get("email");
+//    private ResultCode handleGetCreate(Map<String, String> params) {
+//        String userId = params.get("userId");
+//        String password = params.get("password");
+//        String name = params.get("name");
+//        String email= params.get("email");
+//
+//        User user = new User(userId, password, name, email);
+//        Database.addUser(user);
+//
+//        printAllUsers();
+//
+//        return ResultCode.OK;
+//    }
 
-        User user = new User(userId, password, name, email);
-        Database.addUser(user);
+    private Response createUser(Request req) {
+        try {
+            // 회원가입 정상 처리
+            String body = new String(req.body, StandardCharsets.UTF_8);
+            req.params = Util.parseParams(body);
 
-        printAllUsers();
+            String userId = req.params.get("userId");
+            String password = req.params.get("password");
+            String name = req.params.get("name");
+            String email= req.params.get("email");
 
-        return ResultCode.OK;
-    }
+            User user = new User(userId, password, name, email);
+            Database.addUser(user);
+            printAllUsers();
 
-    private ResultCode createUser(Map<String, String> params) {
-        return ResultCode.OK;
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.OK;
+            return rsp;
+        } catch (Exception e) {
+            // 회원가입 처리중 에러 발생
+            logger.error(e.getMessage());
+            return new Response(ResultCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private void printAllUsers() {
