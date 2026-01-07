@@ -30,12 +30,14 @@ public class WebServer {
                 workQueue
         );
 
+        ActionMap actionMap = new ActionMap();
+
         try (ServerSocket listenSocket = new ServerSocket(port)) {
             Socket connection;
             while ((connection = listenSocket.accept()) != null) {
                 try {
                     // Executor 등록
-                    executor.execute(new RequestHandler(connection));
+                    executor.execute(new RequestHandler(connection, actionMap));
                 } catch (RejectedExecutionException exception) {
                     // Executor 등록 실패 => 소켓 닫기
                     connection.close();

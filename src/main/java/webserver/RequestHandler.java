@@ -6,58 +6,22 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
-import db.Database;
-import http.RequestMessage;
-import http.RequestMethod;
-import model.User;
+import http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Util;
 
 public class RequestHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
-    private Socket connection;
+    private final Socket connection;
+    private final ActionMap actionMap;
 
-    private Map<String, String> contentTypeMap = new HashMap<>();
-
-    private Map<String, Consumer<Map<String, String>>> getMap = new HashMap<>();
-    private Map<String, Consumer<Map<String, String>>> postMap = new HashMap<>();
-
-    public RequestHandler(Socket connectionSocket) {
+    public RequestHandler(Socket connectionSocket, ActionMap actionMap) {
         this.connection = connectionSocket;
-
-        // Path를 실제 동작 메소드와 연결
-        getMap.put("/create", this::handleCreate);
-
-        // Content Type 해시 맵 초기화
-        contentTypeMap.put("html", "text/html;charset=utf-8");
-        contentTypeMap.put("css",  "text/css;charset=utf-8");
-        contentTypeMap.put("js",   "application/javascript;charset=utf-8");
-        contentTypeMap.put("json", "application/json;charset=utf-8");
-        contentTypeMap.put("xml",  "application/xml;charset=utf-8");
-        contentTypeMap.put("txt",  "text/plain;charset=utf-8");
-        contentTypeMap.put("csv",  "text/csv;charset=utf-8");
-        contentTypeMap.put("md",   "text/markdown;charset=utf-8");
-
-        contentTypeMap.put("svg",  "image/svg+xml");
-        contentTypeMap.put("png",  "image/png");
-        contentTypeMap.put("jpg",  "image/jpeg");
-        contentTypeMap.put("jpeg", "image/jpeg");
-        contentTypeMap.put("gif",  "image/gif");
-        contentTypeMap.put("webp", "image/webp");
-        contentTypeMap.put("ico",  "image/x-icon");
-
-        contentTypeMap.put("woff",  "font/woff");
-        contentTypeMap.put("woff2", "font/woff2");
-        contentTypeMap.put("ttf",   "font/ttf");
-        contentTypeMap.put("otf",   "font/otf");
-        contentTypeMap.put("eot",   "application/vnd.ms-fontobject");
-
-        contentTypeMap.put("pdf", "application/pdf");
-        contentTypeMap.put("wasm","application/wasm");
-        contentTypeMap.put("map", "application/json;charset=utf-8");
+        this.actionMap = actionMap;
     }
 
     public void run() {
@@ -70,75 +34,28 @@ public class RequestHandler implements Runnable {
             RequestMessage requestMessage = inputStreamDecoder.parseSingleMessage();
             logger.debug(requestMessage.toString());
 
+            // 처리 순서: 정의된 Action->정적 파일->404 Not Found
+            Response response =
+                    handleAction(requestMessage)
+                    .or(() -> handleStaticFile(requestMessage))
+                    .orElseGet(() -> new Response(ResultCode.NOT_FOUND));
+
             // TODO 파일 복사하지 않고 바로 흘려보내기
-            // request target 분기
-            // 1) 요청 (/create?userId=zxc534)
-            // 2) 정적 파일 (/global.css) 
-            // 3) 디렉토리 (/registration => registration/index.html)
-
-            // TODO 스프링처럼 매핑하는 로직을 만들어야할 듯
-            handleRequest(requestMessage);
-            if (requestMessage.requestTarget.split("\\?")[0].equals("/create")) {
-
-            } else {
-                URL resource;
-                if (requestMessage.requestTarget.contains(".")) {
-                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
-                } else {
-                    resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
-                    requestMessage.requestTarget = "index.html";
-                }
-
-                // 파일을 찾음 => body에 데이터 복사 => stream에 흘려보냄
-                if (resource != null) {
-                    InputStream is = resource.openStream();
-                    byte[] body = is.readAllBytes();
-                    is.close();
-                    DataOutputStream dos = new DataOutputStream(out);
-
-                    String fileType = requestMessage.requestTarget.split("\\.")[1];
-                    String contentType = contentTypeMap.get(fileType);
-                    if (contentType != null) {
-                        response200Header(dos, contentType, body.length);
-                        responseBody(dos, body);
-                    } else {
-                        logger.debug("Unknown file type");
-                    }
-                }
-            }
+            // 생성된 Response를 내보냄
+            DataOutputStream dos = new DataOutputStream(out);
+            response.streamOutResponse(dos);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
     }
 
-    private void responseBody(DataOutputStream dos, byte[] body) {
+    private Optional<Response> handleAction(RequestMessage req) {
         try {
-            dos.write(body, 0, body.length);
-            dos.flush();
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
+            String[] splitted = Util.splitOnce(req.requestTarget, '?');
+            String path = splitted[0];
+            String query = splitted[1];
 
-    private void response200Header(DataOutputStream dos, String contentType, int lengthOfBodyContent) {
-        try {
-            dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: " + contentType + "\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    private Optional<String> handleRequest(RequestMessage req) {
-        try {
-            int qm = req.requestTarget.indexOf('?');
-            String path = req.requestTarget.substring(0, qm);
-            String query = req.requestTarget.substring(qm + 1);
-
-            // TODO split 파싱 로직 검토 필요
-            // 처음 나타나는 char를 기준으로 2개로 나누는 유틸 메소드
+            // TODO split 유틸 메소드로 변경
             Map<String, String> params = new HashMap<>();
             if (!query.isEmpty()) {
                 String[] pairs = query.split("&");
@@ -152,41 +69,66 @@ public class RequestHandler implements Runnable {
                 }
             }
 
-            Consumer<Map<String, String>> action = null;
+            Function<Map<String, String>, ResultCode> action = null;
             if (req.method == RequestMethod.GET) {
-                action = getMap.get(path);
+                action = actionMap.GET(path);
             } else if (req.method == RequestMethod.POST) {
-                action = postMap.get(path);
+                action = actionMap.POST(path);
             }
 
+            // Action이 MAP에 없음
             if (action == null) {
                 // path에 해당하는 action이 정의되어 있지 않음
-                // => 처리를 위임
+                // null 반환 => 처리를 위임
+                return Optional.empty();
             } else {
-                // action을 찾음
-                action.accept(params);
+                // action을 실행하고 결과 반환
+                ResultCode code = action.apply(params);
+                return Optional.of(new Response(code));
             }
         } catch (Exception e) {
+            // TODO 500이 아닌 적절한 코드 반환
             //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
+            logger.error(e.getMessage());
+            return Optional.of(new Response(ResultCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    private Optional<Response> handleStaticFile(RequestMessage requestMessage) {
+        // 기본 처리
+        URL resource;
+        if (requestMessage.requestTarget.contains(".")) {
+            // 정적 파일
+            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget);
+        } else {
+            // 디렉토리 => 경로/index.html
+            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + requestMessage.requestTarget + "/index.html");
+            requestMessage.requestTarget = "index.html";
         }
 
+        // 파일을 찾음
+        if (resource != null) {
+            try {
+                Response rspWithFile = new Response();
+                rspWithFile.resultCode = ResultCode.OK;
+                rspWithFile.contentType = ContentType.fromFileName(requestMessage.requestTarget);
+                if (rspWithFile.contentType == null) {
+                    // TODO 적절한 처리 필요
+                    // 파일은 찾았는데 확장자명에 대한 content type이 존재하지 않는 경우
+                    return Optional.of(new Response(ResultCode.INTERNAL_SERVER_ERROR));
+                }
+                InputStream is = resource.openStream();
+                rspWithFile.body = is.readAllBytes();
+                is.close();
+
+                return Optional.of(rspWithFile);
+            } catch (IOException e) {
+                // 파일 읽기 중 예외 발생 => 404 반환
+                logger.debug(e.getMessage());
+            }
+        }
+
+        // 파일을 찾지 못함
         return Optional.empty();
-    }
-
-    private void handleCreate(Map<String, String> params) {
-        String userId = params.get("userId");
-        String password = params.get("password");
-        String name = params.get("name");
-        String email= params.get("email");
-
-        User user = new User(userId, password, name, email);
-        Database.addUser(user);
-    }
-
-    private void printAllUsers() {
-        logger.debug("==== USERS ====");
-        for (User user : Database.findAll()) {
-            logger.debug("{} {} {} {}", user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
-        }
     }
 }

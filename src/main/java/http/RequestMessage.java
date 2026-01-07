@@ -1,5 +1,6 @@
 package http;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ public class RequestMessage {
     public String requestTarget;
     public String httpVersion;
     Map<String, String> header = new HashMap<>(20);
+    public byte[] body;
 
     public RequestMessage() {}
 
@@ -28,7 +30,7 @@ public class RequestMessage {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("====== HTTP Request Message ======\n")
+        sb.append("\n====== HTTP Request Message ======\n")
                 .append(method).append(" ")
                 .append(requestTarget).append(" ")
                 .append(httpVersion).append("\r\n");
@@ -37,7 +39,11 @@ public class RequestMessage {
             String fieldValue = header.get(fieldName);
             sb.append(fieldName).append(": ").append(fieldValue).append("\r\n");
         }
-        sb.append("==================================\n");
+        if (body != null) {
+            sb.append("================BODY==============\n");
+            sb.append(new String(body, StandardCharsets.UTF_8));
+        }
+        sb.append("\n==================================\n");
 
         return sb.toString();
     }
