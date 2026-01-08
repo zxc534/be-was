@@ -97,8 +97,7 @@ public class RequestHandler implements Runnable {
                 rspWithFile.resultCode = ResultCode.OK;
                 rspWithFile.contentType = ContentType.fromFileName(request.requestTarget);
                 if (rspWithFile.contentType == null) {
-                    // TODO 적절한 처리 필요
-                    // 파일은 찾았는데 확장자명에 대한 content type이 존재하지 않는 경우
+                    logger.error("Failed to find content type for {}", request.requestTarget);
                     return Optional.of(new Response(ResultCode.INTERNAL_SERVER_ERROR));
                 }
                 InputStream is = resource.openStream();
@@ -107,8 +106,7 @@ public class RequestHandler implements Runnable {
 
                 return Optional.of(rspWithFile);
             } catch (IOException e) {
-                // 파일 읽기 중 예외 발생 => 404 반환
-                logger.debug(e.getMessage());
+                logger.error("Failed to read file", e);
             }
         }
 
