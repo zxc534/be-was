@@ -110,6 +110,7 @@ public class ActionMap {
             String password = req.params.get("password");
 
             User user = Database.findUserById(userId);
+            String failReason;
 
             if (user != null) {
                 if (user.getPassword().equals(password)) {
@@ -122,11 +123,18 @@ public class ActionMap {
                     rsp.header.add("Set-Cookie: sid=" + sid + "; Path=/");
                     rsp.header.add("Location: /index.html");
                     return rsp;
+                } else {
+                    failReason = "비밀번호가 올바르지 않습니다.";
                 }
+            } else {
+                failReason = "존재하지 않는 ID입니다.";
             }
 
-            // 실패 응답 (존재하지 않는 userId 또는 password 불일치)
-            return new Response(ResultCode.UNAUTHORIZED);
+            // 실패 응답
+            Response rsp = new Response(ResultCode.UNAUTHORIZED);
+            rsp.contentType = ContentType.TXT;
+            rsp.body = failReason.getBytes(StandardCharsets.UTF_8);
+            return rsp;
         } catch (Exception e) {
             // TODO 액션을 인터페이스로 묶고 에러 핸들링을 공통으로 처리할 수 있지 않을까?
             // 로그인 처리중 에러 발생
