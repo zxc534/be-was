@@ -25,34 +25,4 @@ public class Response {
         this.resultCode = resultCode;
         this.body = body;
     }
-
-    public void streamOutResponse(DataOutputStream dos) {
-        responseHeader(dos);
-        if (body != null) responseBody(dos, body);
-    }
-
-    private void responseBody(DataOutputStream dos, byte[] body) {
-        try {
-            dos.write(body, 0, body.length);
-            dos.flush();
-        } catch (IOException e) {
-            logger.error("Failed to response body", e);
-        }
-    }
-
-    private void responseHeader(DataOutputStream dos) {
-        try {
-            dos.writeBytes("HTTP/1.1 " + resultCode.code() + " " + resultCode.text() + "\r\n");
-            if (this.contentType != null) {
-                dos.writeBytes("Content-Type: " + contentType.mimeType() + "\r\n");
-                dos.writeBytes("Content-Length: " + body.length + "\r\n");
-            }
-            for (String h : header) {
-                dos.writeBytes(h + "\r\n");
-            }
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            logger.error("Failed to response header", e);
-        }
-    }
 }

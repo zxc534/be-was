@@ -8,13 +8,12 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-// 메시지 input stream을 읽어서 메시지 인스턴스 생성
-public class InputStreamDecoder {
-    private static final Logger logger = LoggerFactory.getLogger(InputStreamDecoder.class);
+public class RequestReader {
+    private static final Logger logger = LoggerFactory.getLogger(RequestReader.class);
 
     private final BufferedInputStream in;
 
-    public InputStreamDecoder(InputStream in) {
+    public RequestReader(InputStream in) {
         this.in = new BufferedInputStream(in);
     }
 

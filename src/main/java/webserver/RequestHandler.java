@@ -3,7 +3,6 @@ package webserver;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -28,9 +27,8 @@ public class RequestHandler implements Runnable {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
 
-            // 파싱
-            InputStreamDecoder inputStreamDecoder = new InputStreamDecoder(in);
-            Request request = inputStreamDecoder.parseSingleMessage();
+            RequestReader requestReader = new RequestReader(in);
+            Request request = requestReader.parseSingleMessage();
             logger.debug(request.toString());
 
             // 처리 순서: 정의된 Action->정적 파일->404 Not Found
@@ -40,9 +38,8 @@ public class RequestHandler implements Runnable {
                     .orElseGet(() -> new Response(ResultCode.NOT_FOUND));
 
             // TODO 파일 복사하지 않고 바로 흘려보내기
-            // 생성된 Response를 내보냄
-            DataOutputStream dos = new DataOutputStream(out);
-            response.streamOutResponse(dos);
+            ResponseWriter responseWriter = new ResponseWriter(out);
+            responseWriter.streamOutResponse(response);
         } catch (IOException e) {
             logger.error("Failed to handle request", e);
         }
