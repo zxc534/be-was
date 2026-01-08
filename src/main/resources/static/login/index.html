@@ -23,7 +23,7 @@
       </header>
       <div class="page">
         <h2 class="page-title">로그인</h2>
-        <form class="form" action="/user/login" method="post" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8">
+        <form id="login-form" class="form" action="/user/login" method="post" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8">
           <div class="textfield textfield_size_s">
             <p class="title_textfield">아이디</p>
             <input
@@ -55,4 +55,55 @@
       </div>
     </div>
   </body>
+
+  <script>
+    (function () {
+      const form = document.getElementById("login-form");
+      const submitBtn = document.getElementById("login-btn");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // 버튼 중복 클릭 방지
+        submitBtn.disabled = true;
+
+        try {
+          // application/x-www-form-urlencoded 로 보내기
+          const formData = new FormData(form);
+          const body = new URLSearchParams(formData);
+
+          // fetch는 기본적으로 302를 따라감(redirect: "follow")
+          const res = await fetch(form.action, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+            },
+            body,
+            credentials: "same-origin", // 쿠키 기반 세션이면 필요
+            redirect: "follow",
+          });
+
+          if (res.status === 401) {
+            alert(`로그인 실패: ${res.body}`);
+            return;
+          }
+
+          // 성공: 서버가 302를 주면 fetch가 따라간 뒤
+          // 최종 응답 URL(res.url)로 브라우저를 이동시켜 주소창도 업데이트
+          if (res.ok) {
+            // res.url은 최종 도착 URL
+            window.location.assign(res.url);
+            return;
+          }
+
+          // 그 외 에러 처리
+          alert(`로그인에 실패했습니다. (status: ${res.status})`);
+        } catch (err) {
+          alert("네트워크 오류가 발생했습니다.");
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    })();
+  </script>
 </html>
