@@ -4,6 +4,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.*;
 
+import db.Database;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +31,9 @@ public class WebServer {
                 TimeUnit.SECONDS,
                 workQueue
         );
+
+        // 테스트용 데이터 추가
+        Database.addUser(new User("zxc534", "qwe123", "ybsong", "zxc534@naver.com"));
 
         ActionMap actionMap = new ActionMap();
 
