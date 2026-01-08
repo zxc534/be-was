@@ -12,6 +12,7 @@ import util.Util;
 import javax.xml.crypto.Data;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -26,6 +27,7 @@ public class ActionMap {
     public ActionMap() {
         // 이곳에서 액션을 정의
         //GET.put("/create", this::handleGetCreate);
+        //GET.put("/", this::mainPage);
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
     }
@@ -50,6 +52,29 @@ public class ActionMap {
 //
 //        return ResultCode.OK;
 //    }
+
+    private Response mainPage (Request req) {
+        String userId = "";
+        String cookieVal = req.getHeader("Cookie");
+        if (cookieVal != null) {
+            Map<String, String> cookie = Util.parseParams(cookieVal);
+            String sid = cookie.get("sid");
+            userId = Database.findUserIdBySid(sid);
+        }
+
+        Map<String, String> variable = new HashMap<>();
+        variable.put("userId", userId);
+
+        Response rsp = new Response();
+        rsp.resultCode = ResultCode.OK;
+        rsp.body = handleDynamicHtml(variable);
+
+        return null;
+    }
+
+    private byte[] handleDynamicHtml(Map<String, String> variable) {
+        return null;
+    }
 
     private Response createUser(Request req) {
         try {
