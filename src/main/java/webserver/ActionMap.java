@@ -28,8 +28,11 @@ public class ActionMap {
         //GET.put("/create", this::handleGetCreate);
         GET.put("/", this::mainPage);
         GET.put("/index.html", this::mainPage);
+        GET.put("/mypage", this::myPage);
+
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
+
     }
 
     public Function<Request, Response> GET(String path) {
@@ -70,6 +73,34 @@ public class ActionMap {
         rsp.body = DynamicHtmlLoader.load("./static/index.html", variables);
         rsp.contentType = ContentType.HTML;
 
+        return rsp;
+    }
+
+    private Response myPage(Request req) {
+        // TODO 중복 코드 제거
+        // TODO if문 중첩 별론데?
+        String cookieVal = req.getHeader("Cookie");
+        if (cookieVal != null) {
+            Map<String, String> cookie = Util.parseParams(cookieVal);
+            String sid = cookie.get("sid");
+            String userId = Database.findUserIdBySid(sid);
+
+            if (userId != null) {
+                Map<String, String> variables = new HashMap<>();
+                variables.put("userId", userId);
+
+                Response rsp = new Response();
+                rsp.resultCode = ResultCode.OK;
+                rsp.body = DynamicHtmlLoader.load("./static/mypage/index.html", variables);
+                rsp.contentType = ContentType.HTML;
+
+                return rsp;
+            }
+        }
+
+        Response rsp = new Response();
+        rsp.resultCode = ResultCode.FOUND;
+        rsp.header.add("Location: /login");
         return rsp;
     }
 
