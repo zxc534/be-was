@@ -14,7 +14,6 @@ public class Request {
     public byte[] body;
 
     public Request() {}
-
     public Request(RequestMethod method, String requestTarget, String httpVersion) {
         this.method = method;
         this.requestTarget = requestTarget;

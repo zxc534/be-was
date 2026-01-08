@@ -1,6 +1,7 @@
 package webserver;
 
 import db.Database;
+import http.ContentType;
 import http.Request;
 import http.Response;
 import http.ResultCode;
@@ -10,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import util.Util;
 
 import javax.xml.crypto.Data;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +31,7 @@ public class ActionMap {
     public ActionMap() {
         // 이곳에서 액션을 정의
         //GET.put("/create", this::handleGetCreate);
-        //GET.put("/", this::mainPage);
+        GET.put("/", this::mainPage);
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
     }
@@ -67,13 +71,24 @@ public class ActionMap {
 
         Response rsp = new Response();
         rsp.resultCode = ResultCode.OK;
-        rsp.body = handleDynamicHtml(variable);
+        rsp.body = handleDynamicHtml("./static/index.html", variable);
+        rsp.contentType = ContentType.HTML;
 
         return null;
     }
 
-    private byte[] handleDynamicHtml(Map<String, String> variable) {
-        return null;
+    private byte[] handleDynamicHtml(String filePath, Map<String, String> variable) {
+        // html을 읽어서 우선 그냥 내보내기 => toByte
+        try {
+            URL resource = Thread.currentThread().getContextClassLoader().getResource(filePath);
+            InputStream is = resource.openStream();
+            byte[] body = is.readAllBytes();
+            is.close();
+            return body;
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return new byte[]{};
+        }
     }
 
     private Response createUser(Request req) {
