@@ -36,7 +36,7 @@ public class Response {
             dos.write(body, 0, body.length);
             dos.flush();
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error("Failed to response body", e);
         }
     }
 
@@ -52,7 +52,7 @@ public class Response {
             }
             dos.writeBytes("\r\n");
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error("Failed to response header", e);
         }
     }
 }

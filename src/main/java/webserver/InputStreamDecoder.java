@@ -73,8 +73,7 @@ public class InputStreamDecoder {
 
             return msg;
         } catch (Exception e) {
-            logger.debug("Error occurred while parsing HTTP message");
-            logger.error(e.getMessage());
+            logger.error("Failed to parse HTTP Request", e);
             // TODO 메시지 파싱 실패 처리
             return null;
         }

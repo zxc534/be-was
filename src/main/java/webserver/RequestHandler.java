@@ -44,7 +44,7 @@ public class RequestHandler implements Runnable {
             DataOutputStream dos = new DataOutputStream(out);
             response.streamOutResponse(dos);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error("Failed to handle request", e);
         }
     }
 
@@ -76,7 +76,7 @@ public class RequestHandler implements Runnable {
         } catch (Exception e) {
             // TODO 500이 아닌 적절한 코드 반환
             //파싱 실패 (올바르지 않은 요청 형식 등) 적절한 response 반환
-            logger.error(e.getMessage());
+            logger.error("Failed to handle action", e);
             return Optional.of(new Response(ResultCode.INTERNAL_SERVER_ERROR));
         }
     }

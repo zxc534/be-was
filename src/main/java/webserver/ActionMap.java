@@ -126,7 +126,7 @@ public class ActionMap {
             return rsp;
         } catch (Exception e) {
             // 회원가입 처리중 에러 발생
-            logger.error(e.getMessage());
+            logger.error("Failed to register user", e);
             return new Response(ResultCode.INTERNAL_SERVER_ERROR);
         }
     }
@@ -169,7 +169,7 @@ public class ActionMap {
         } catch (Exception e) {
             // TODO 액션을 인터페이스로 묶고 에러 핸들링을 공통으로 처리할 수 있지 않을까?
             // 로그인 처리중 에러 발생
-            logger.error(e.getMessage());
+            logger.error("Failed to login", e);
             return new Response(ResultCode.INTERNAL_SERVER_ERROR);
         }
     }

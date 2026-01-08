@@ -33,7 +33,7 @@ public class DynamicHtmlLoader {
             String rendered = replaceTokens(html, variable);
             return rendered.getBytes(DEFAULT_CHARSET);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error("Failed to load/render: {}", filePath, e);
             return new byte[]{};
         }
     }
