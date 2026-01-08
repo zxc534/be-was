@@ -43,7 +43,7 @@ public class DynamicHtmlLoader {
         if (variables == null || variables.isEmpty()) return input;
 
         Matcher matcher = TOKEN_PATTERN.matcher(input);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         while (matcher.find()) {
             String tokenName = matcher.group(1).trim();
