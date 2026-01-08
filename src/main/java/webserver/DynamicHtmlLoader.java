@@ -17,6 +17,8 @@ public class DynamicHtmlLoader {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     private static final Pattern TOKEN_PATTERN = Pattern.compile("\\{([^{}]+)\\}");
 
+    private DynamicHtmlLoader() {}
+
     public static byte[] load(String filePath, Map<String, String> variable) {
         try {
             URL resource = Thread.currentThread().getContextClassLoader().getResource(filePath);
