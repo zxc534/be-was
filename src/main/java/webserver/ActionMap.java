@@ -27,6 +27,7 @@ public class ActionMap {
         // 이곳에서 액션을 정의
         //GET.put("/create", this::handleGetCreate);
         GET.put("/", this::mainPage);
+        GET.put("/index.html", this::mainPage);
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
     }
@@ -61,15 +62,15 @@ public class ActionMap {
             userId = Database.findUserIdBySid(sid);
         }
 
-        Map<String, String> variable = new HashMap<>();
-        variable.put("userId", userId);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("userId", userId);
 
         Response rsp = new Response();
         rsp.resultCode = ResultCode.OK;
-        rsp.body = DynamicHtmlLoader.load("./static/index.html", variable);
+        rsp.body = DynamicHtmlLoader.load("./static/index.html", variables);
         rsp.contentType = ContentType.HTML;
 
-        return null;
+        return rsp;
     }
 
     private Response createUser(Request req) {
