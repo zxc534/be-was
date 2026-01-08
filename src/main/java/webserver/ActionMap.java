@@ -10,13 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Util;
 
-import javax.xml.crypto.Data;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -71,24 +66,10 @@ public class ActionMap {
 
         Response rsp = new Response();
         rsp.resultCode = ResultCode.OK;
-        rsp.body = handleDynamicHtml("./static/index.html", variable);
+        rsp.body = DynamicHtmlLoader.load("./static/index.html", variable);
         rsp.contentType = ContentType.HTML;
 
         return null;
-    }
-
-    private byte[] handleDynamicHtml(String filePath, Map<String, String> variable) {
-        // html을 읽어서 우선 그냥 내보내기 => toByte
-        try {
-            URL resource = Thread.currentThread().getContextClassLoader().getResource(filePath);
-            InputStream is = resource.openStream();
-            byte[] body = is.readAllBytes();
-            is.close();
-            return body;
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            return new byte[]{};
-        }
     }
 
     private Response createUser(Request req) {
