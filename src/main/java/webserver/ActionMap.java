@@ -58,7 +58,7 @@ public class ActionMap {
 
     private Response mainPage (Request req) {
         String userId = "";
-        String cookieVal = req.getHeader("Cookie");
+        String cookieVal = req.getHeader("cookie");
         if (cookieVal != null) {
             Map<String, String> cookie = Util.parseParams(cookieVal);
             String sid = cookie.get("sid");
@@ -79,7 +79,7 @@ public class ActionMap {
     private Response myPage(Request req) {
         // TODO 중복 코드 제거
         // TODO if문 중첩 별론데?
-        String cookieVal = req.getHeader("Cookie");
+        String cookieVal = req.getHeader("cookie");
         if (cookieVal != null) {
             Map<String, String> cookie = Util.parseParams(cookieVal);
             String sid = cookie.get("sid");

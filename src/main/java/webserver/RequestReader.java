@@ -47,13 +47,13 @@ public class RequestReader {
                 continue;
             }
 
-            String fieldName = line.substring(0, colon);
+            String fieldName = line.substring(0, colon).toLowerCase();
             String fieldValue = line.substring(colon + 1).trim();
             msg.putHeader(fieldName, fieldValue);
         }
 
         int contentLength = 0;
-        String strLen = msg.getHeader("Content-Length");
+        String strLen = msg.getHeader("content-length");
         if (strLen != null && !strLen.isBlank()) {
             contentLength = Integer.parseInt(strLen.trim());
         }
