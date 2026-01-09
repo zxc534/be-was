@@ -2,6 +2,7 @@ package webserver;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.function.Function;
@@ -40,6 +41,8 @@ public class RequestHandler implements Runnable {
             // TODO 파일 복사하지 않고 바로 흘려보내기
             ResponseWriter responseWriter = new ResponseWriter(out);
             responseWriter.streamOutResponse(response);
+        } catch (SocketTimeoutException e) {
+            logger.error("SocketTimeout", e);
         } catch (Exception e) {
             logger.error("Failed to handle request", e);
         }

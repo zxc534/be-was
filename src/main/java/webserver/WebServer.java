@@ -42,6 +42,7 @@ public class WebServer {
             while ((connection = listenSocket.accept()) != null) {
                 try {
                     // Executor 등록
+                    connection.setSoTimeout(5000);
                     executor.execute(new RequestHandler(connection, actionMap));
                 } catch (RejectedExecutionException exception) {
                     // Executor 등록 실패 => 소켓 닫기
