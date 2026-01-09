@@ -40,7 +40,7 @@ public class RequestHandler implements Runnable {
             // TODO 파일 복사하지 않고 바로 흘려보내기
             ResponseWriter responseWriter = new ResponseWriter(out);
             responseWriter.streamOutResponse(response);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Failed to handle request", e);
         }
     }
