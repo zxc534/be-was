@@ -115,6 +115,13 @@ public class ActionMap {
             String name = req.params.get("name");
             String email= req.params.get("email");
 
+            // null 처리
+            if(userId==null || password==null || name==null || email==null) {
+                Response failRsp = new Response(ResultCode.BAD_REQUEST);
+                failRsp.contentType = ContentType.TXT;
+                failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
+            }
+
             User user = new User(userId, password, name, email);
             Database.addUser(user);
             printAllUsers();
