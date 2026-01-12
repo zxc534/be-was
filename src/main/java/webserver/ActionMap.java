@@ -230,10 +230,27 @@ public class ActionMap {
     }
 
     private Response articlePage(Request req) {
-        Response rsp = new Response();
-        rsp.resultCode = ResultCode.OK;
-        rsp.body = DynamicHtmlLoader.load("./static/article/index.html", null);
-        rsp.contentType = ContentType.HTML;
-        return rsp;
+        // TODO 임시 아티클 페이지
+        int articleId = Integer.parseInt(req.params.getOrDefault("articleId", "0"));
+
+        if (articleId == 0) {
+            // TODO 존재하지 않는 article
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.FOUND;
+            rsp.header.add("Location: /index.html");
+            return rsp;
+        } else {
+            Article article = Database.findArticleById(articleId);
+            Map<String, String> variables = new HashMap<>();
+            variables.put("userId", article.getUserId());
+            variables.put("title", article.getTitle());
+            variables.put("content", article.getContent());
+
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.OK;
+            rsp.body = DynamicHtmlLoader.load("./static/article/index.html", variables);
+            rsp.contentType = ContentType.HTML;
+            return rsp;
+        }
     }
 }
