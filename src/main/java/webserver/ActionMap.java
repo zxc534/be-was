@@ -43,19 +43,6 @@ public class ActionMap {
         return POST.get(path);
     }
 
-//    private ResultCode handleGetCreate(Map<String, String> params) {
-//        String userId = params.get("userId");
-//        String password = params.get("password");
-//        String name = params.get("name");
-//        String email= params.get("email");
-//
-//        User user = new User(userId, password, name, email);
-//        Database.addUser(user);
-//
-//        printAllUsers();
-//
-//        return ResultCode.OK;
-//    }
     private Response writePage(Request req) {
         String userId = getUserIdFromCookie(req);;
 
