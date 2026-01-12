@@ -75,9 +75,9 @@ public class ActionMap {
         for (Article a : articles) {
             sb.append(String.format("""
                     <div class="article-item">
-                        <a class="article-title" href="/article?articleId=1">%s</a>
+                        <a class="article-title" href="/article?articleId=%d">%s</a>
                         <span class="article-author">%s</span>
-                    </div>""", a.getTitle(), a.getUserId()));
+                    </div>""", a.getArticleId(), a.getTitle(), a.getUserId()));
         }
 
         String articleList = sb.toString();

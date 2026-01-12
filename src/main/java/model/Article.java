@@ -1,6 +1,7 @@
 package model;
 
 public class Article {
+    private int articleId;
     private String userId;
     private String title;
     private String content;
@@ -10,6 +11,10 @@ public class Article {
         this.title = title;
         this.content = content;
     }
+
+    public int getArticleId() { return articleId; }
+
+    public void setArticleId(int articleId) { this.articleId = articleId; }
 
     public String getUserId() { return userId; }
 

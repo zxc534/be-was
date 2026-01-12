@@ -37,6 +37,7 @@ public class Database {
 
     public static int addArticle(Article article) {
         articleId++;
+        article.setArticleId(articleId);
         articles.put(articleId, article);
         return articleId;
     }
