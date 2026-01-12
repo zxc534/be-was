@@ -27,12 +27,12 @@ public class ActionMap {
         // 이곳에서 액션을 정의
         //GET.put("/create", this::handleGetCreate);
         GET.put("/", this::mainPage);
+        GET.put("/main", this::mainPage);
         GET.put("/index.html", this::mainPage);
         GET.put("/mypage", this::myPage);
 
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
-
     }
 
     public Function<Request, Response> GET(String path) {
