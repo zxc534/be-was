@@ -33,6 +33,7 @@ public class ActionMap {
 
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
+        POST.put("/article", this::createArticle);
     }
 
     public Function<Request, Response> GET(String path) {
@@ -190,5 +191,9 @@ public class ActionMap {
         for (User user : Database.findAll()) {
             logger.debug(user.toString());
         }
+    }
+
+    private Response createArticle(Request req) {
+
     }
 }

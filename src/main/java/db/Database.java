@@ -1,5 +1,6 @@
 package db;
 
+import model.Article;
 import model.User;
 
 import java.util.Collection;
@@ -28,4 +29,21 @@ public class Database {
     public static void addSession(String sid, String userId) { sessions.put(sid, userId); }
 
     public static String findUserIdBySid(String sid) { return sessions.get(sid); }
+
+    // Article
+    private static Map<Integer, Article> articles = new HashMap<>();
+
+    private static int articleId = 0;
+
+    public static int addArticle(Article article) {
+        articleId++;
+        articles.put(articleId, article);
+        return articleId;
+    }
+
+    public static Article findArticleById(int articleId) { return articles.get(articleId); }
+
+    public static Collection<Article> findAllArticles() {
+        return articles.values();
+    }
 }
