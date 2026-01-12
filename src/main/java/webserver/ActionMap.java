@@ -59,7 +59,7 @@ public class ActionMap {
             // TODO 불필요한 DynamicHtmlLoader 사용
             Response rsp = new Response();
             rsp.resultCode = ResultCode.OK;
-            rsp.body = DynamicHtmlLoader.load("static/article/write.html", null);
+            rsp.body = DynamicHtmlLoader.load("./static/article/write.html", null);
             rsp.contentType = ContentType.HTML;
             return rsp;
         }
@@ -232,7 +232,7 @@ public class ActionMap {
     private Response articlePage(Request req) {
         Response rsp = new Response();
         rsp.resultCode = ResultCode.OK;
-        rsp.body = DynamicHtmlLoader.load("/static/article/index.html", null);
+        rsp.body = DynamicHtmlLoader.load("./static/article/index.html", null);
         rsp.contentType = ContentType.HTML;
         return rsp;
     }
