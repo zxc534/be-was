@@ -5,6 +5,7 @@ import http.ContentType;
 import http.Request;
 import http.Response;
 import http.ResultCode;
+import model.Article;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,6 +126,8 @@ public class ActionMap {
                 Response failRsp = new Response(ResultCode.BAD_REQUEST);
                 failRsp.contentType = ContentType.TXT;
                 failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
+                // TODO 실패 결과 반환
+                // TODO isEmpty()도 확인
             }
 
             User user = new User(userId, password, name, email);
@@ -194,6 +197,36 @@ public class ActionMap {
     }
 
     private Response createArticle(Request req) {
+        String userId = getUserIdFromCookie(req);
 
+        if (userId.isEmpty()) {
+            // 로그인되지 않은 요청 -> 로그인 페이지로 리다이렉트
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.FOUND;
+            rsp.header.add("Location: /login");
+            return rsp;
+        }
+
+        // 로그인된 요청
+        String body = new String(req.body, StandardCharsets.UTF_8);
+        req.params = Util.parseParams(body);
+
+        String title = req.params.getOrDefault("title", "");
+        String content = req.params.getOrDefault("content", "");
+
+        if (title.isEmpty() || content.isEmpty()) {
+            // 올바르지 않은 요청
+            Response failRsp = new Response(ResultCode.BAD_REQUEST);
+            failRsp.contentType = ContentType.TXT;
+            failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
+            return failRsp;
+        } else {
+            Article article = new Article(userId, title, content);
+            int articleId = Database.addArticle(article);
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.FOUND;
+            rsp.header.add("Location: /article/" + articleId);
+            return rsp;
+        }
     }
 }
