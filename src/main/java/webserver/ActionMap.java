@@ -57,14 +57,7 @@ public class ActionMap {
 //        return ResultCode.OK;
 //    }
     private Response writePage(Request req) {
-        // TODO 로그인 확인 중복 코드 메소드화
-        String userId = "";
-        String cookieVal = req.getHeader("cookie");
-        if (cookieVal != null) {
-            Map<String, String> cookie = Util.parseParams(cookieVal);
-            String sid = cookie.get("sid");
-            userId = Database.findUserIdBySid(sid);
-        }
+        String userId = getUserIdFromCookie(req);;
 
         if (userId.isEmpty()) {
             // 로그인하지 않은 사용자
@@ -78,13 +71,7 @@ public class ActionMap {
     }
 
     private Response mainPage (Request req) {
-        String userId = "";
-        String cookieVal = req.getHeader("cookie");
-        if (cookieVal != null) {
-            Map<String, String> cookie = Util.parseParams(cookieVal);
-            String sid = cookie.get("sid");
-            userId = Database.findUserIdBySid(sid);
-        }
+        String userId = getUserIdFromCookie(req);
 
         Map<String, String> variables = new HashMap<>();
         variables.put("userId", userId);
@@ -98,15 +85,7 @@ public class ActionMap {
     }
 
     private Response myPage(Request req) {
-        // TODO 중복 코드 제거
-        // TODO if문 중첩 별론데?
-        String userId = "";
-        String cookieVal = req.getHeader("cookie");
-        if (cookieVal != null) {
-            Map<String, String> cookie = Util.parseParams(cookieVal);
-            String sid = cookie.get("sid");
-            userId = Database.findUserIdBySid(sid);
-        }
+        String userId = getUserIdFromCookie(req);
 
         if (userId.isEmpty()) {
             Response rsp = new Response();
@@ -124,6 +103,17 @@ public class ActionMap {
 
             return rsp;
         }
+    }
+
+    private String getUserIdFromCookie(Request req) {
+        String userId = "";
+        String cookieVal = req.getHeader("cookie");
+        if (cookieVal != null) {
+            Map<String, String> cookie = Util.parseParams(cookieVal);
+            String sid = cookie.get("sid");
+            userId = Database.findUserIdBySid(sid);
+        }
+        return userId;
     }
 
     private Response createUser(Request req) {
