@@ -30,6 +30,7 @@ public class ActionMap {
         GET.put("/main", this::mainPage);
         GET.put("/index.html", this::mainPage);
         GET.put("/mypage", this::myPage);
+        GET.put("/article", this::writePage);
 
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
@@ -55,6 +56,26 @@ public class ActionMap {
 //
 //        return ResultCode.OK;
 //    }
+    private Response writePage(Request req) {
+        // TODO 로그인 확인 중복 코드 메소드화
+        String userId = "";
+        String cookieVal = req.getHeader("cookie");
+        if (cookieVal != null) {
+            Map<String, String> cookie = Util.parseParams(cookieVal);
+            String sid = cookie.get("sid");
+            userId = Database.findUserIdBySid(sid);
+        }
+
+        if (userId.isEmpty()) {
+            // 로그인하지 않은 사용자
+
+        } else {
+            // 로그인한 사용자
+
+        }
+
+        return null;
+    }
 
     private Response mainPage (Request req) {
         String userId = "";
@@ -79,29 +100,30 @@ public class ActionMap {
     private Response myPage(Request req) {
         // TODO 중복 코드 제거
         // TODO if문 중첩 별론데?
+        String userId = "";
         String cookieVal = req.getHeader("cookie");
         if (cookieVal != null) {
             Map<String, String> cookie = Util.parseParams(cookieVal);
             String sid = cookie.get("sid");
-            String userId = Database.findUserIdBySid(sid);
-
-            if (userId != null) {
-                Map<String, String> variables = new HashMap<>();
-                variables.put("userId", userId);
-
-                Response rsp = new Response();
-                rsp.resultCode = ResultCode.OK;
-                rsp.body = DynamicHtmlLoader.load("./static/mypage/index.html", variables);
-                rsp.contentType = ContentType.HTML;
-
-                return rsp;
-            }
+            userId = Database.findUserIdBySid(sid);
         }
 
-        Response rsp = new Response();
-        rsp.resultCode = ResultCode.FOUND;
-        rsp.header.add("Location: /login");
-        return rsp;
+        if (userId.isEmpty()) {
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.FOUND;
+            rsp.header.add("Location: /login");
+            return rsp;
+        } else {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("userId", userId);
+
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.OK;
+            rsp.body = DynamicHtmlLoader.load("./static/mypage/index.html", variables);
+            rsp.contentType = ContentType.HTML;
+
+            return rsp;
+        }
     }
 
     private Response createUser(Request req) {
