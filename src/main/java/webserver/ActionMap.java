@@ -30,7 +30,8 @@ public class ActionMap {
         GET.put("/main", this::mainPage);
         GET.put("/index.html", this::mainPage);
         GET.put("/mypage", this::myPage);
-        GET.put("/article", this::writePage);
+        GET.put("/write", this::writePage);
+        GET.put("/article", this::articlePage);
 
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
@@ -58,7 +59,7 @@ public class ActionMap {
             // TODO 불필요한 DynamicHtmlLoader 사용
             Response rsp = new Response();
             rsp.resultCode = ResultCode.OK;
-            rsp.body = DynamicHtmlLoader.load("./static/article/index.html", null);
+            rsp.body = DynamicHtmlLoader.load("static/article/write.html", null);
             rsp.contentType = ContentType.HTML;
             return rsp;
         }
@@ -135,7 +136,7 @@ public class ActionMap {
             // 리다이렉트 응답
             Response rsp = new Response();
             rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /index.html");
+            rsp.header.add("Location: /write.html");
             return rsp;
         } catch (Exception e) {
             // 회원가입 처리중 에러 발생
@@ -165,7 +166,7 @@ public class ActionMap {
 
                     Response rsp = new Response(ResultCode.FOUND);
                     rsp.header.add("Set-Cookie: sid=" + sid + "; Path=/");
-                    rsp.header.add("Location: /index.html");
+                    rsp.header.add("Location: /write.html");
                     return rsp;
                 } else {
                     failReason = "비밀번호가 올바르지 않습니다.";
@@ -223,8 +224,12 @@ public class ActionMap {
             int articleId = Database.addArticle(article);
             Response rsp = new Response();
             rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /article/" + articleId);
+            rsp.header.add("Location: /article?articleId=" + articleId);
             return rsp;
         }
+    }
+
+    private Response articlePage(Request req) {
+
     }
 }

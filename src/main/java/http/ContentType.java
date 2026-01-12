@@ -54,7 +54,7 @@ public enum ContentType {
         return ContentType.valueOf(normalized);
     }
 
-    //파일명("index.html") -> mimeType
+    //파일명("write.html") -> mimeType
     public static ContentType fromFileName(String fileName) {
         if (fileName == null) return null;
         int dot = fileName.lastIndexOf('.');
