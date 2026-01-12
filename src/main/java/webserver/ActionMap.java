@@ -73,7 +73,11 @@ public class ActionMap {
         Collection<Article> articles = Database.findAllArticles();
         StringBuilder sb = new StringBuilder();
         for (Article a : articles) {
-            sb.append(String.format("<div><span>%s</span><span>%s</span><div>", a.getTitle(), a.getUserId()));
+            sb.append(String.format("""
+                    <div class="article-item">
+                        <a class="article-title" href="/article?articleId=1">%s</a>
+                        <span class="article-author">%s</span>
+                    </div>""", a.getTitle(), a.getUserId()));
         }
 
         String articleList = sb.toString();

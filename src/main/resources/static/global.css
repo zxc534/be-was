@@ -201,3 +201,52 @@
   height: 16px; 
   background: #D9D9D9;
 }
+
+/* ---- 추가 ---- */
+/* 글 목록 */
+.article-list {
+  width: 890px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.article-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 16px 20px;
+  border: 1px solid #d2dae0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.article-title {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+  color: #14212b;
+  text-decoration: none;
+
+  /* 제목이 길어질 때 줄임표 */
+  max-width: 680px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.article-title:hover {
+  text-decoration: underline;
+}
+
+.article-author {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 14px;
+  color: #4b5966;
+
+  flex-shrink: 0;
+  margin-left: 16px;
+}
