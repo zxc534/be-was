@@ -136,7 +136,7 @@ public class ActionMap {
             // 리다이렉트 응답
             Response rsp = new Response();
             rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /write.html");
+            rsp.header.add("Location: /index.html");
             return rsp;
         } catch (Exception e) {
             // 회원가입 처리중 에러 발생
@@ -166,7 +166,7 @@ public class ActionMap {
 
                     Response rsp = new Response(ResultCode.FOUND);
                     rsp.header.add("Set-Cookie: sid=" + sid + "; Path=/");
-                    rsp.header.add("Location: /write.html");
+                    rsp.header.add("Location: /index.html");
                     return rsp;
                 } else {
                     failReason = "비밀번호가 올바르지 않습니다.";
@@ -230,6 +230,10 @@ public class ActionMap {
     }
 
     private Response articlePage(Request req) {
-
+        Response rsp = new Response();
+        rsp.resultCode = ResultCode.OK;
+        rsp.body = DynamicHtmlLoader.load("/static/article/index.html", null);
+        rsp.contentType = ContentType.HTML;
+        return rsp;
     }
 }

@@ -88,9 +88,9 @@ public class RequestHandler implements Runnable {
             // 정적 파일
             resource = Thread.currentThread().getContextClassLoader().getResource("./static" + request.requestTarget);
         } else {
-            // 디렉토리 => 경로/write.html
-            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + request.requestTarget + "/write.html");
-            request.requestTarget = "write.html";
+            // 디렉토리 => 경로/index.html
+            resource = Thread.currentThread().getContextClassLoader().getResource("./static" + request.requestTarget + "/index.html");
+            request.requestTarget = "index.html";
         }
 
         // 파일을 찾음
