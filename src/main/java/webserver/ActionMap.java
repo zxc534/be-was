@@ -25,7 +25,6 @@ public class ActionMap {
 
     public ActionMap() {
         // 이곳에서 액션을 정의
-        //GET.put("/create", this::handleGetCreate);
         GET.put("/", this::mainPage);
         GET.put("/main", this::mainPage);
         GET.put("/index.html", this::mainPage);
@@ -44,20 +43,26 @@ public class ActionMap {
     }
 
     private Response writePage(Request req) {
-        String userId = getUserIdFromCookie(req);;
+        String userId = getUserIdFromCookie(req);
 
         if (userId.isEmpty()) {
             // 로그인하지 않은 사용자
-
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.FOUND;
+            rsp.header.add("Location: /login");
+            return rsp;
         } else {
             // 로그인한 사용자
-
+            // TODO 불필요한 DynamicHtmlLoader 사용
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.OK;
+            rsp.body = DynamicHtmlLoader.load("./static/article/index.html", null);
+            rsp.contentType = ContentType.HTML;
+            return rsp;
         }
-
-        return null;
     }
 
-    private Response mainPage (Request req) {
+    private Response mainPage(Request req) {
         String userId = getUserIdFromCookie(req);
 
         Map<String, String> variables = new HashMap<>();
@@ -93,14 +98,14 @@ public class ActionMap {
     }
 
     private String getUserIdFromCookie(Request req) {
-        String userId = "";
+        String userId = null;
         String cookieVal = req.getHeader("cookie");
         if (cookieVal != null) {
             Map<String, String> cookie = Util.parseParams(cookieVal);
             String sid = cookie.get("sid");
             userId = Database.findUserIdBySid(sid);
         }
-        return userId;
+        return (userId == null) ? "" : userId;
     }
 
     private Response createUser(Request req) {
