@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import util.Util;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -68,8 +69,18 @@ public class ActionMap {
     private Response mainPage(Request req) {
         String userId = getUserIdFromCookie(req);
 
+        // build articles html element
+        Collection<Article> articles = Database.findAllArticles();
+        StringBuilder sb = new StringBuilder();
+        for (Article a : articles) {
+            sb.append(String.format("<div><span>%s</span><span>%s</span><div>", a.getTitle(), a.getUserId()));
+        }
+
+        String articleList = sb.toString();
+
         Map<String, String> variables = new HashMap<>();
         variables.put("userId", userId);
+        variables.put("articleList", articleList.isEmpty() ? "작성글이 없습니다." : articleList);
 
         Response rsp = new Response();
         rsp.resultCode = ResultCode.OK;
@@ -196,6 +207,7 @@ public class ActionMap {
     }
 
     private Response createArticle(Request req) {
+        // TODO 공백을 보내면 +로 저장되는 오류
         String userId = getUserIdFromCookie(req);
 
         if (userId.isEmpty()) {
