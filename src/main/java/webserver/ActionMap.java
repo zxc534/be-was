@@ -116,18 +116,16 @@ public class ActionMap {
             String body = new String(req.body, StandardCharsets.UTF_8);
             req.params = Util.parseParams(body);
 
-            String userId = req.params.get("userId");
-            String password = req.params.get("password");
-            String name = req.params.get("name");
-            String email= req.params.get("email");
+            String userId = req.params.getOrDefault("userId", "");
+            String password = req.params.getOrDefault("password", "");
+            String name = req.params.getOrDefault("name", "");
+            String email= req.params.getOrDefault("email", "");
 
-            // null 처리
-            if(userId==null || password==null || name==null || email==null) {
+            if(userId.isEmpty() || password.isEmpty() || name.isEmpty() || email.isEmpty()) {
                 Response failRsp = new Response(ResultCode.BAD_REQUEST);
                 failRsp.contentType = ContentType.TXT;
                 failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
-                // TODO 실패 결과 반환
-                // TODO isEmpty()도 확인
+                return failRsp;
             }
 
             User user = new User(userId, password, name, email);
