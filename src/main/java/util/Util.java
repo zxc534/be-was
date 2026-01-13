@@ -17,16 +17,20 @@ public final class Util {
     }
 
     public static Map<String, String> parseParams(String chunk) {
+        return parseParams(chunk, '&', '=');
+    }
+
+    public static Map<String, String> parseParams(String chunk, char deli1, char deli2) {
         Map<String, String> params = new HashMap<>();
         if (chunk == null || chunk.isEmpty()) {
             return params;
         }
 
-        String[] pairs = chunk.split("&");
+        String[] pairs = chunk.split(String.valueOf(deli1));
         for (String p : pairs) {
             if (p.isEmpty()) continue;
 
-            String[] nv = splitOnce(p, '=');
+            String[] nv = splitOnce(p, deli2);
             String name = URLDecoder.decode(nv[0], StandardCharsets.UTF_8);
             String value = URLDecoder.decode(nv[1], StandardCharsets.UTF_8);
 
