@@ -9,6 +9,7 @@ import model.Article;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.FileSaver;
 import util.MultipartParser;
 import util.Util;
 
@@ -249,6 +250,21 @@ public class ActionMap {
 
         // body 파싱
         MultipartParser.MultipartForm form = MultipartParser.parse(req.body, boundary);
+        String content = form.fields.getOrDefault("content", "");
+        if (content.isEmpty()) {
+            throw new IllegalArgumentException("empty content");
+        }
+
+        // 첫 이미지만 저장
+        MultipartParser.FilePart filePart = form.files.get(0);
+        FileSaver.Result result = FileSaver.saveImg(filePart.bytes, filePart.filename, "article");
+        if (!result.isSuccess()) {
+            // 이미지 저장 실패
+            throw new IllegalArgumentException(result.getMessage());
+        }
+
+
+        // TODO article DB에 이미지 파일명을 저장 -> 조회 가능하도
 
         // 임시 Response
         Response rsp = new Response();
