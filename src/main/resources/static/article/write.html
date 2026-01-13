@@ -23,7 +23,7 @@
       </header>
       <div class="page">
         <h2 class="page-title">게시글 작성</h2>
-        <form class="form" action="/article" method="post" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8">
+        <form class="form" action="/article" method="post" enctype="multipart/form-data" accept-charset="UTF-8">
           <div class="textfield textfield_size_s">
             <p class="title_textfield">제목</p>
             <input
@@ -40,6 +40,17 @@
               name="content"
             ></textarea>
           </div>
+
+          <div class="textfield textfield_size_s">
+            <p class="title_textfield">이미지</p>
+            <input
+                    class="input_textfield"
+                    type="file"
+                    name="image"
+                    accept="image/*"
+            />
+          </div>
+
           <button
             id="registration-btn"
             class="btn btn_contained btn_size_m"

@@ -77,7 +77,7 @@ public class ActionMap {
                     <div class="article-item">
                         <a class="article-title" href="/article?articleId=%d">%s</a>
                         <span class="article-author">%s</span>
-                    </div>""", a.getArticleId(), a.getTitle(), a.getUserId()));
+                    </div>""", a.getArticleId(), a .getTitle(), a.getUserId()));
         }
 
         String articleList = sb.toString();
