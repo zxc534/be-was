@@ -9,13 +9,11 @@ import model.Article;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.MultipartParser;
 import util.Util;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 public class ActionMap {
@@ -230,7 +228,7 @@ public class ActionMap {
 //        String title = req.params.getOrDefault("title", "");
 //        String content = req.params.getOrDefault("content", "");
 
-        // multipart/form-data 바디 파싱 로직
+        // multipart/form-data 헤더 파싱 로직
         String contentType = req.getHeader("content-type");
         if (contentType == null) {
             // TODO 가장 외부에서 TRY CATCH로 받고 해당하는 내용을 실패 응답으로 반환하는 코드 한곳에서 관리
@@ -249,21 +247,28 @@ public class ActionMap {
 
         String boundary = Util.splitOnce(tb[1], '=')[1];
 
+        // body 파싱
+        MultipartParser.MultipartForm form = MultipartParser.parse(req.body, boundary);
 
-        if (title.isEmpty() || content.isEmpty()) {
-            // 올바르지 않은 요청
-            Response failRsp = new Response(ResultCode.BAD_REQUEST);
-            failRsp.contentType = ContentType.TXT;
-            failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
-            return failRsp;
-        } else {
-            Article article = new Article(userId, title, content);
-            int articleId = Database.addArticle(article);
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /article?articleId=" + articleId);
-            return rsp;
-        }
+        // 임시 Response
+        Response rsp = new Response();
+        rsp.resultCode = ResultCode.NOT_FOUND;
+        return rsp;
+
+//        if (title.isEmpty() || content.isEmpty()) {
+//            // 올바르지 않은 요청
+//            Response failRsp = new Response(ResultCode.BAD_REQUEST);
+//            failRsp.contentType = ContentType.TXT;
+//            failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
+//            return failRsp;
+//        } else {
+//            Article article = new Article(userId, title, content);
+//            int articleId = Database.addArticle(article);
+//            Response rsp = new Response();
+//            rsp.resultCode = ResultCode.FOUND;
+//            rsp.header.add("Location: /article?articleId=" + articleId);
+//            return rsp;
+//        }
     }
 
     private Response articlePage(Request req) {
