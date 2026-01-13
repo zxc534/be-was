@@ -71,13 +71,13 @@ public class ActionMap {
         // build articles html element
         Collection<Article> articles = Database.findAllArticles();
         StringBuilder sb = new StringBuilder();
-        for (Article a : articles) {
-            sb.append(String.format("""
-                    <div class="article-item">
-                        <a class="article-title" href="/article?articleId=%d">%s</a>
-                        <span class="article-author">%s</span>
-                    </div>""", a.getArticleId(), a .getTitle(), a.getUserId()));
-        }
+//        for (Article a : articles) {
+//            sb.append(String.format("""
+//                    <div class="article-item">
+//                        <a class="article-title" href="/article?articleId=%d">%s</a>
+//                        <span class="article-author">%s</span>
+//                    </div>""", a.getArticleId(), a .getTitle(), a.getUserId()));
+//        }
 
         String articleList = sb.toString();
 
@@ -290,7 +290,6 @@ public class ActionMap {
             Article article = Database.findArticleById(articleId);
             Map<String, String> variables = new HashMap<>();
             variables.put("userId", article.getUserId());
-            variables.put("title", article.getTitle());
             variables.put("content", article.getContent());
 
             Response rsp = new Response();
