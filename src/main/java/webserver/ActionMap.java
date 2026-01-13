@@ -291,6 +291,7 @@ public class ActionMap {
             Map<String, String> variables = new HashMap<>();
             variables.put("userId", article.getUserId());
             variables.put("content", article.getContent());
+            variables.put("imgFileName", article.getImgFileName());
 
             Response rsp = new Response();
             rsp.resultCode = ResultCode.OK;
