@@ -1,9 +1,13 @@
 package webserver;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -85,8 +89,18 @@ public class RequestHandler implements Runnable {
         // 기본 처리
         URL resource;
         if (request.requestTarget.contains(".")) {
-            // 정적 파일
+            // 정적 파일 resources/static
             resource = Thread.currentThread().getContextClassLoader().getResource("./static" + request.requestTarget);
+
+            // 작업 경로
+            if (resource == null) {
+                String relative = request.requestTarget.substring(1); // "/img/..." -> "img/..."
+                Path root = Paths.get(System.getProperty("user.dir")).toAbsolutePath().normalize();
+                Path candidate = root.resolve(relative).normalize();
+                try {
+                    resource = candidate.toUri().toURL();
+                } catch (MalformedURLException ignored) {}
+            }
         } else {
             // 디렉토리 => 경로/index.html
             resource = Thread.currentThread().getContextClassLoader().getResource("./static" + request.requestTarget + "/index.html");
