@@ -3,12 +3,12 @@ package model;
 public class Article {
     private int articleId;
     private String userId;
-    private String title;
+    private String imgFileName;
     private String content;
 
-    public Article(String userId, String title, String content) {
+    public Article(String userId, String imgFileName, String content) {
         this.userId = userId;
-        this.title = title;
+        this.imgFileName = imgFileName;
         this.content = content;
     }
 
@@ -18,7 +18,7 @@ public class Article {
 
     public String getUserId() { return userId; }
 
-    public String getTitle() { return title; }
+    public String getImgFileName() { return imgFileName; }
 
     public String getContent() { return content; }
 }

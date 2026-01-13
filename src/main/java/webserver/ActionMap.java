@@ -252,39 +252,28 @@ public class ActionMap {
         MultipartParser.MultipartForm form = MultipartParser.parse(req.body, boundary);
         String content = form.fields.getOrDefault("content", "");
         if (content.isEmpty()) {
-            throw new IllegalArgumentException("empty content");
+            // 올바르지 않은 요청
+            Response failRsp = new Response(ResultCode.BAD_REQUEST);
+            failRsp.contentType = ContentType.TXT;
+            failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
+            return failRsp;
         }
 
         // 첫 이미지만 저장
         MultipartParser.FilePart filePart = form.files.get(0);
         FileSaver.Result result = FileSaver.saveImg(filePart.bytes, filePart.filename, "article");
-        if (!result.isSuccess()) {
-            // 이미지 저장 실패
-            throw new IllegalArgumentException(result.getMessage());
-        }
 
+        // 이미지 저장 실패
+        if (!result.isSuccess()) { throw new IllegalArgumentException(result.getMessage()); }
 
-        // TODO article DB에 이미지 파일명을 저장 -> 조회 가능하도
+        String imgFileName = result.getMessage();
+        Article article = new Article(userId, imgFileName, content);
+        int articleId = Database.addArticle(article);
 
-        // 임시 Response
         Response rsp = new Response();
-        rsp.resultCode = ResultCode.NOT_FOUND;
+        rsp.resultCode = ResultCode.FOUND;
+        rsp.header.add("Location: /article?articleId=" + articleId);
         return rsp;
-
-//        if (title.isEmpty() || content.isEmpty()) {
-//            // 올바르지 않은 요청
-//            Response failRsp = new Response(ResultCode.BAD_REQUEST);
-//            failRsp.contentType = ContentType.TXT;
-//            failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
-//            return failRsp;
-//        } else {
-//            Article article = new Article(userId, title, content);
-//            int articleId = Database.addArticle(article);
-//            Response rsp = new Response();
-//            rsp.resultCode = ResultCode.FOUND;
-//            rsp.header.add("Location: /article?articleId=" + articleId);
-//            return rsp;
-//        }
     }
 
     private Response articlePage(Request req) {
