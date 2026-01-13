@@ -223,11 +223,32 @@ public class ActionMap {
         }
 
         // 로그인된 요청
-        String body = new String(req.body, StandardCharsets.UTF_8);
-        req.params = Util.parseParams(body);
+        // 기존 파싱 로직
+//        String body = new String(req.body, StandardCharsets.UTF_8);
+//        req.params = Util.parseParams(body);
+//
+//        String title = req.params.getOrDefault("title", "");
+//        String content = req.params.getOrDefault("content", "");
 
-        String title = req.params.getOrDefault("title", "");
-        String content = req.params.getOrDefault("content", "");
+        // multipart/form-data 바디 파싱 로직
+        String contentType = req.getHeader("content-type");
+        if (contentType == null) {
+            // TODO 가장 외부에서 TRY CATCH로 받고 해당하는 내용을 실패 응답으로 반환하는 코드 한곳에서 관리
+            // TODO 가능하다면 이 기능을 Action을 관리하는 부분에서 일괄 관리
+            throw new IllegalArgumentException("content type 없음");
+        }
+        String[] tb = Util.splitOnce(contentType, ';');
+
+        if (tb.length != 2) {
+            throw new IllegalArgumentException("올바르지 않은 헤더, contentType 길이가 2가 아님");
+        }
+
+        if (!tb[0].equals(ContentType.MULTIPART.mimeType())) {
+            throw new IllegalArgumentException("content type이 multipart/form-data가 아님");
+        }
+
+        String boundary = Util.splitOnce(tb[1], '=')[1];
+
 
         if (title.isEmpty() || content.isEmpty()) {
             // 올바르지 않은 요청

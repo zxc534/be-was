@@ -32,7 +32,8 @@ public enum ContentType {
     // Others
     PDF("application/pdf"),
     WASM("application/wasm"),
-    MAP("application/json;charset=utf-8");
+    MAP("application/json;charset=utf-8"),
+    MULTIPART("multipart/form-data");
 
     private final String mimeType;
 
