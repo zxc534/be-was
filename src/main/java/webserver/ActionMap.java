@@ -222,7 +222,6 @@ public class ActionMap {
     }
 
     private Response createArticle(Request req) {
-        // TODO 공백을 보내면 +로 저장되는 오류
         String userId = getUserIdFromCookie(req);
 
         if (userId.isEmpty()) {
@@ -231,13 +230,6 @@ public class ActionMap {
         }
 
         // 로그인된 요청
-        // 기존 파싱 로직
-//        String body = new String(req.body, StandardCharsets.UTF_8);
-//        req.params = Util.parseParams(body);
-//
-//        String title = req.params.getOrDefault("title", "");
-//        String content = req.params.getOrDefault("content", "");
-
         // multipart/form-data 헤더 파싱 로직
         String contentType = req.getHeader("content-type");
         if (contentType == null) {
