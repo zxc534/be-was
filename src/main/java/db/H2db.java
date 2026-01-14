@@ -164,6 +164,21 @@ public class H2db implements Database {
     }
 
     @Override
+    public void deleteSession(String sid) {
+        String sql = "DELETE FROM sessions WHERE sid = ?";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, sid);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public String findUserIdBySid(String sid) {
         String sql = """
                 SELECT user_id

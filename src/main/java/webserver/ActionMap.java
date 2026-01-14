@@ -216,6 +216,10 @@ public class ActionMap {
         }
     }
 
+    private Response logoutUser(Request req) {
+
+    }
+
     private Response createArticle(Request req) {
         // TODO 공백을 보내면 +로 저장되는 오류
         String userId = getUserIdFromCookie(req);

@@ -31,6 +31,10 @@ public class Memorydb implements Database {
         sessions.put(sid, userId);
     }
 
+    public void deleteSession(String sid) {
+        sessions.remove(sid);
+    }
+
     public String findUserIdBySid(String sid) {
         return sessions.get(sid);
     }

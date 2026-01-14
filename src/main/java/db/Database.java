@@ -14,6 +14,8 @@ public interface Database {
 
     void addSession(String sid, String userId);
 
+    void deleteSession(String sid);
+
     String findUserIdBySid(String sid);
 
     int addArticle(Article article);
