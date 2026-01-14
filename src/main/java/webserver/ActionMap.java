@@ -165,7 +165,7 @@ public class ActionMap {
             // 리다이렉트 응답
             Response rsp = new Response();
             rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /index.html");
+            rsp.header.add("Location: /login");
             return rsp;
         } catch (Exception e) {
             // 회원가입 처리중 에러 발생
