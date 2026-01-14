@@ -21,30 +21,92 @@ public class PageActions {
 
         if (userId.isEmpty()) {
             String headerMenuDefault = """
-                <li class="header__menu__item">
-                    <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
-                </li>
-                <li class="header__menu__item">
-                    <a class="btn btn_ghost btn_size_s" href="/registration">회원 가입</a>
-                </li>
-                """;
+                    <li class="header__menu__item">
+                        <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
+                    </li>
+                    <li class="header__menu__item">
+                        <a class="btn btn_ghost btn_size_s" href="/registration">회원 가입</a>
+                    </li>
+                    """;
             variables.put("headerMenu", headerMenuDefault);
         } else {
             String headerMenuForLoginUser = String.format("""
-                <li class="header__menu__item">
-                  <a class="post__account__nickname" href="/mypage">안녕하세요, %s님</a>
-                </li>
-                <li class="header__menu__item">
-                    <a class="btn btn_contained btn_size_s" href="/write">글쓰기</a>
-                </li>
-                <li class="header__menu__item">
-                    <a class="btn btn_ghost btn_size_s" href="/user/logout">로그아웃</a>
-                </li>
-                """, userId);
+                    <li class="header__menu__item">
+                      <a class="post__account__nickname" href="/mypage">안녕하세요, %s님</a>
+                    </li>
+                    <li class="header__menu__item">
+                        <a class="btn btn_contained btn_size_s" href="/write">글쓰기</a>
+                    </li>
+                    <li class="header__menu__item">
+                        <a class="btn btn_ghost btn_size_s" href="/user/logout">로그아웃</a>
+                    </li>
+                    """, userId);
             variables.put("headerMenu", headerMenuForLoginUser);
         }
 
         Article article = WebServer.db.findLatestArticle();
+
+        if (article == null) {
+            variables.put("article", "작성된 글이 없습니다😭😭😭");
+        } else {
+            String articleHtml = String.format("""
+                    <div class="post">
+                      <div class="post__account">
+                        <img class="post__account__img" />
+                        <p class="post__account__nickname">%s</p>
+                      </div>
+                      <img class="post__img" src=%s>
+                      <div class="post__menu">
+                        <ul class="post__menu__personal">
+                          <li>
+                            <button class="post__menu__btn">
+                              <img src="../img/like.svg" />
+                            </button>
+                          </li>
+                          <li>
+                            <button class="post__menu__btn">
+                              <img src="../img/sendLink.svg" />
+                            </button>
+                          </li>
+                        </ul>
+                        <button class="post__menu__btn">
+                          <img src="../img/bookMark.svg" />
+                        </button>
+                      </div>
+                      <p class="post__article">
+                        %s
+                      </p>
+                    </div>
+                    <ul class="comment">
+                    </ul>
+                    <nav class="nav">
+                      <ul class="nav__menu">
+                        <li class="nav__menu__item">
+                          <a class="nav__menu__item__btn" href="">
+                            <img
+                              class="nav__menu__item__img"
+                              src="../img/ci_chevron-left.svg"
+                            />
+                            이전 글
+                          </a>
+                        </li>
+                        <li class="nav__menu__item">
+                          <a class="btn btn_ghost btn_size_m" href="/comment">댓글 작성</a>
+                        </li>
+                        <li class="nav__menu__item">
+                          <a class="nav__menu__item__btn" href="">
+                            다음 글
+                            <img
+                              class="nav__menu__item__img"
+                              src="../img/ci_chevron-right.svg"
+                            />
+                          </a>
+                        </li>
+                      </ul>
+                    </nav>
+                    """, article.getUserId(), article.getImgFileName(), article.getContent());
+            variables.put("article", articleHtml);
+        }
 
         Response rsp = new Response();
         rsp.resultCode = ResultCode.OK;
