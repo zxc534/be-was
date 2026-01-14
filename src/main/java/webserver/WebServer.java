@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.concurrent.*;
 
 import db.Database;
+import db.H2db;
 import db.Memorydb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,8 @@ public class WebServer {
     private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
     private static final int DEFAULT_PORT = 8080;
 
-    private static final Database db = new Memorydb();
+    //private static final Database db = new Memorydb();
+    private static final Database db = new H2db();
 
     public static void main(String args[]) throws Exception {
         int port = 0;

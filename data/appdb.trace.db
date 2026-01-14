@@ -1,0 +1,3 @@
+2026-01-14 16:05:25.879449+09:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM USERS SESSIONS [*]ARTICLES"; SQL statement:
+SELECT * FROM USERS SESSIONS ARTICLES [42000-224]
