@@ -6,6 +6,7 @@ import java.util.concurrent.*;
 
 import db.Database;
 import db.H2db;
+import db.Memorydb;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,8 @@ import org.slf4j.LoggerFactory;
 public class WebServer {
     private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
     private static final int DEFAULT_PORT = 8080;
+
+    private static final Database db = new Memorydb();
 
     public static void main(String args[]) throws Exception {
         int port = 0;
@@ -33,13 +36,7 @@ public class WebServer {
                 workQueue
         );
 
-        // DB
-        H2db.init();
-
-        // 테스트용 데이터 추가
-        Database.addUser(new User("zxc534", "qwe123", "ybsong", "zxc534@naver.com"));
-
-        ActionMap actionMap = new ActionMap();
+        ActionMap actionMap = new ActionMap(db);
 
         try (ServerSocket listenSocket = new ServerSocket(port)) {
             Socket connection;

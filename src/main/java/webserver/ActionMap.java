@@ -1,6 +1,7 @@
 package webserver;
 
 import db.Database;
+import db.Memorydb;
 import http.ContentType;
 import http.Request;
 import http.Response;
@@ -20,11 +21,15 @@ import java.util.function.Function;
 public class ActionMap {
     private static final Logger logger = LoggerFactory.getLogger(ActionMap.class);
 
+    private final Database db;
+
     // Action Map
     private final Map<String, Function<Request, Response>> GET = new HashMap<>();
     private final Map<String, Function<Request, Response>> POST = new HashMap<>();
 
-    public ActionMap() {
+    public ActionMap(Database db) {
+        this.db = db;
+
         // 이곳에서 액션을 정의
         GET.put("/", this::mainPage);
         GET.put("/main", this::mainPage);
@@ -69,7 +74,7 @@ public class ActionMap {
         String userId = getUserIdFromCookie(req);
 
         // build articles html element
-        Collection<Article> articles = Database.findAllArticles();
+        Collection<Article> articles = db.findAllArticles();
         StringBuilder sb = new StringBuilder();
 //        for (Article a : articles) {
 //            sb.append(String.format("""
@@ -120,7 +125,7 @@ public class ActionMap {
         if (cookieVal != null) {
             Map<String, String> cookie = Util.parseParams(cookieVal);
             String sid = cookie.get("sid");
-            userId = Database.findUserIdBySid(sid);
+            userId = db.findUserIdBySid(sid);
         }
         return (userId == null) ? "" : userId;
     }
@@ -144,7 +149,7 @@ public class ActionMap {
             }
 
             User user = new User(userId, password, name, email);
-            Database.addUser(user);
+            db.addUser(user);
             printAllUsers();
 
             // 리다이렉트 응답
@@ -168,7 +173,7 @@ public class ActionMap {
             String userId = req.params.get("userId");
             String password = req.params.get("password");
 
-            User user = Database.findUserById(userId);
+            User user = db.findUserById(userId);
             String failReason;
 
             if (user != null) {
@@ -176,7 +181,7 @@ public class ActionMap {
                     // 로그인 성공
                     // Session ID를 쿠키로 설정, 메인 페이지로 리다이렉트
                     String sid = UUID.randomUUID().toString();
-                    Database.addSession(sid, userId);
+                    db.addSession(sid, userId);
 
                     Response rsp = new Response(ResultCode.FOUND);
                     rsp.header.add("Set-Cookie: sid=" + sid + "; Path=/");
@@ -204,7 +209,7 @@ public class ActionMap {
 
     private void printAllUsers() {
         logger.debug("==== USERS ====");
-        for (User user : Database.findAll()) {
+        for (User user : db.findAll()) {
             logger.debug(user.toString());
         }
     }
@@ -268,7 +273,7 @@ public class ActionMap {
 
         String imgFileName = result.getMessage();
         Article article = new Article(userId, imgFileName, content);
-        int articleId = Database.addArticle(article);
+        int articleId = db.addArticle(article);
 
         Response rsp = new Response();
         rsp.resultCode = ResultCode.FOUND;
@@ -287,7 +292,7 @@ public class ActionMap {
             rsp.header.add("Location: /index.html");
             return rsp;
         } else {
-            Article article = Database.findArticleById(articleId);
+            Article article = db.findArticleById(articleId);
             Map<String, String> variables = new HashMap<>();
             variables.put("userId", article.getUserId());
             variables.put("content", article.getContent());
