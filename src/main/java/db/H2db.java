@@ -263,6 +263,34 @@ public class H2db implements Database {
     }
 
     @Override
+    public Article findLatestArticle() {
+        String sql = """
+                SELECT article_id, user_id, img_file_name, content
+                FROM articles
+                ORDER BY article_id DESC
+                LIMIT 1
+                """;
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (!rs.next()) return null;
+
+            String userId = rs.getString("user_id");
+            String imgFileName = rs.getString("img_file_name");
+            String content = rs.getString("content");
+
+            Article article = new Article(userId, imgFileName, content);
+            article.setArticleId(rs.getInt("article_id"));
+            return article;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public Collection<Article> findAllArticles() {
         String sql = """
                 SELECT article_id, user_id, img_file_name, content

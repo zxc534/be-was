@@ -22,5 +22,7 @@ public interface Database {
 
     Article findArticleById(int articleId);
 
+    Article findLatestArticle();
+
     Collection<Article> findAllArticles();
 }

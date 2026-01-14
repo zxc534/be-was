@@ -44,6 +44,8 @@ public class PageActions {
             variables.put("headerMenu", headerMenuForLoginUser);
         }
 
+        Article article = WebServer.db.findLatestArticle();
+
         Response rsp = new Response();
         rsp.resultCode = ResultCode.OK;
         rsp.body = DynamicHtmlLoader.load("./static/index.html", variables);

@@ -55,6 +55,8 @@ public class Memorydb implements Database {
         return articles.get(articleId);
     }
 
+    public Article findLatestArticle() { return null; }
+
     public Collection<Article> findAllArticles() {
         return articles.values();
     }
