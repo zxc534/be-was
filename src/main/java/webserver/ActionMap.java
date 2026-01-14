@@ -158,6 +158,22 @@ public class ActionMap {
                 return failRsp;
             }
 
+            // 길이 조건 확인
+            if (userId.length()<4 || password.length()<4 || name.length()<4) {
+                Response failRsp = new Response(ResultCode.BAD_REQUEST);
+                failRsp.contentType = ContentType.TXT;
+                failRsp.body = "아이디/닉네임/비밀번호는 4글자 이상이어야합니다.".getBytes(StandardCharsets.UTF_8);
+                return failRsp;
+            }
+
+            // 아이디 중복 확인
+            if (db.findUserById(userId) != null) {
+                Response failRsp = new Response(ResultCode.BAD_REQUEST);
+                failRsp.contentType = ContentType.TXT;
+                failRsp.body = "존재하는 아이디입니다.".getBytes(StandardCharsets.UTF_8);
+                return failRsp;
+            }
+
             User user = new User(userId, password, name, email);
             db.addUser(user);
 
