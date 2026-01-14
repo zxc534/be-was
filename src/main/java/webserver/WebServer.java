@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.concurrent.*;
 
 import db.Database;
+import db.H2db;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,9 @@ public class WebServer {
                 TimeUnit.SECONDS,
                 workQueue
         );
+
+        // DB
+        H2db.init();
 
         // 테스트용 데이터 추가
         Database.addUser(new User("zxc534", "qwe123", "ybsong", "zxc534@naver.com"));
