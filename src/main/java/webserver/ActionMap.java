@@ -1,7 +1,6 @@
 package webserver;
 
 import db.Database;
-import db.Memorydb;
 import http.ContentType;
 import http.Request;
 import http.Response;
@@ -46,6 +45,7 @@ public class ActionMap {
     public Function<Request, Response> GET(String path) {
         return GET.get(path);
     }
+
     public Function<Request, Response> POST(String path) {
         return POST.get(path);
     }
@@ -139,9 +139,9 @@ public class ActionMap {
             String userId = req.params.getOrDefault("userId", "");
             String password = req.params.getOrDefault("password", "");
             String name = req.params.getOrDefault("name", "");
-            String email= req.params.getOrDefault("email", "");
+            String email = req.params.getOrDefault("email", "");
 
-            if(userId.isEmpty() || password.isEmpty() || name.isEmpty() || email.isEmpty()) {
+            if (userId.isEmpty() || password.isEmpty() || name.isEmpty() || email.isEmpty()) {
                 Response failRsp = new Response(ResultCode.BAD_REQUEST);
                 failRsp.contentType = ContentType.TXT;
                 failRsp.body = "모든 필드를 입력해야합니다.".getBytes(StandardCharsets.UTF_8);
@@ -269,7 +269,9 @@ public class ActionMap {
         FileSaver.Result result = FileSaver.saveImg(filePart.bytes, filePart.filename, "article");
 
         // 이미지 저장 실패
-        if (!result.isSuccess()) { throw new IllegalArgumentException(result.getMessage()); }
+        if (!result.isSuccess()) {
+            throw new IllegalArgumentException(result.getMessage());
+        }
 
         String imgFileName = result.getMessage();
         Article article = new Article(userId, imgFileName, content);

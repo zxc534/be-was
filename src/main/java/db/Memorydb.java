@@ -27,9 +27,13 @@ public class Memorydb implements Database {
     // Map<sid, userId>
     private static Map<String, String> sessions = new HashMap<>();
 
-    public void addSession(String sid, String userId) { sessions.put(sid, userId); }
+    public void addSession(String sid, String userId) {
+        sessions.put(sid, userId);
+    }
 
-    public String findUserIdBySid(String sid) { return sessions.get(sid); }
+    public String findUserIdBySid(String sid) {
+        return sessions.get(sid);
+    }
 
     // Article
     private static Map<Integer, Article> articles = new HashMap<>();
@@ -43,7 +47,9 @@ public class Memorydb implements Database {
         return articleId;
     }
 
-    public Article findArticleById(int articleId) { return articles.get(articleId); }
+    public Article findArticleById(int articleId) {
+        return articles.get(articleId);
+    }
 
     public Collection<Article> findAllArticles() {
         return articles.values();

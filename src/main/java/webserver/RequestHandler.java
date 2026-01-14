@@ -5,7 +5,6 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -39,8 +38,8 @@ public class RequestHandler implements Runnable {
             // 처리 순서: 정의된 Action->정적 파일->404 Not Found
             Response response =
                     handleAction(request)
-                    .or(() -> handleStaticFile(request))
-                    .orElseGet(() -> new Response(ResultCode.NOT_FOUND));
+                            .or(() -> handleStaticFile(request))
+                            .orElseGet(() -> new Response(ResultCode.NOT_FOUND));
 
             // TODO 파일 복사하지 않고 바로 흘려보내기
             ResponseWriter responseWriter = new ResponseWriter(out);
@@ -99,7 +98,8 @@ public class RequestHandler implements Runnable {
                 Path candidate = root.resolve(relative).normalize();
                 try {
                     resource = candidate.toUri().toURL();
-                } catch (MalformedURLException ignored) {}
+                } catch (MalformedURLException ignored) {
+                }
             }
         } else {
             // 디렉토리 => 경로/index.html

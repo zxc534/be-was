@@ -5,9 +5,7 @@ import java.net.Socket;
 import java.util.concurrent.*;
 
 import db.Database;
-import db.H2db;
 import db.Memorydb;
-import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

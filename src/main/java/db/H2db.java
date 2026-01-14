@@ -13,7 +13,9 @@ public class H2db {
     private static final String PASS = "";
 
 
-    private H2db() {}
+    private H2db() {
+        init();
+    }
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASS);

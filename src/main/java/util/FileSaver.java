@@ -7,7 +7,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
 public final class FileSaver {
-    private FileSaver() {}
+    private FileSaver() {
+    }
 
     public static class Result {
         private final boolean success;
@@ -18,18 +19,29 @@ public final class FileSaver {
             this.message = message;
         }
 
-        public static Result ok(String message) { return new Result(true, message); }
-        public static Result fail(String message) { return new Result(false, message); }
+        public static Result ok(String message) {
+            return new Result(true, message);
+        }
 
-        public boolean isSuccess() { return this.success; }
-        public String getMessage() { return this.message; }
+        public static Result fail(String message) {
+            return new Result(false, message);
+        }
+
+        public boolean isSuccess() {
+            return this.success;
+        }
+
+        public String getMessage() {
+            return this.message;
+        }
     }
 
     /**
      * 이미지 파일을 ./img/{dir} 경로에 저장합니다. png, jpg 확장자의 이미지 파일만 허용합니다.
+     *
      * @param imgBytes 이미지 파일 데이터
      * @param fileName 이미지 파일명
-     * @param dir 저장될 디렉토리
+     * @param dir      저장될 디렉토리
      * @return 파일 저장 결과
      */
     public static Result saveImg(byte[] imgBytes, String fileName, String dir) {// 방어 로직

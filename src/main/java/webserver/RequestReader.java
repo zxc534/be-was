@@ -72,7 +72,7 @@ public class RequestReader {
         return msg;
     }
 
-    private String readLine() throws IOException{
+    private String readLine() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
 
         while (true) {
