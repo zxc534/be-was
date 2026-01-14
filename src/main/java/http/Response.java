@@ -17,12 +17,19 @@ public class Response {
     public List<String> header = new LinkedList<>();
     public byte[] body;
 
-    public Response() {};
+    public Response() {}
     public Response(ResultCode resultCode) {
         this.resultCode = resultCode;
     }
     public Response(ResultCode resultCode, byte[] body) {
         this.resultCode = resultCode;
         this.body = body;
+    }
+
+    public static Response redirect(String location) {
+        Response rsp = new Response();
+        rsp.resultCode = ResultCode.FOUND;
+        rsp.header.add("Location: " + location);
+        return rsp;
     }
 }

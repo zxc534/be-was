@@ -55,10 +55,7 @@ public class ActionMap {
 
         if (userId.isEmpty()) {
             // 로그인하지 않은 사용자
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /login");
-            return rsp;
+            return Response.redirect("/login");
         } else {
             // 로그인한 사용자
             // TODO 불필요한 DynamicHtmlLoader 사용
@@ -112,10 +109,7 @@ public class ActionMap {
         String userId = getUserIdFromCookie(req);
 
         if (userId.isEmpty()) {
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /login");
-            return rsp;
+            return Response.redirect("/login");
         } else {
             Map<String, String> variables = new HashMap<>();
             variables.put("userId", userId);
@@ -166,11 +160,7 @@ public class ActionMap {
             User user = new User(userId, password, name, email);
             db.addUser(user);
 
-            // 리다이렉트 응답
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /login");
-            return rsp;
+            return Response.redirect("/login");
         } catch (Exception e) {
             // 회원가입 처리중 에러 발생
             logger.error("Failed to register user", e);
@@ -199,7 +189,7 @@ public class ActionMap {
 
                     Response rsp = new Response(ResultCode.FOUND);
                     rsp.header.add("Set-Cookie: sid=" + sid + "; Path=/");
-                    rsp.header.add("Location: /index.html");
+                    rsp.header.add("Location: /");
                     return rsp;
                 } else {
                     failReason = "비밀번호가 올바르지 않습니다.";
@@ -227,10 +217,7 @@ public class ActionMap {
             db.deleteSession(sid);
         }
 
-        Response rsp = new Response();
-        rsp.resultCode = ResultCode.FOUND;
-        rsp.header.add("Location: /");
-        return rsp;
+        return Response.redirect("/");
     }
 
     private Response createArticle(Request req) {
@@ -239,10 +226,7 @@ public class ActionMap {
 
         if (userId.isEmpty()) {
             // 로그인되지 않은 요청 -> 로그인 페이지로 리다이렉트
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /login");
-            return rsp;
+            return Response.redirect("/login");
         }
 
         // 로그인된 요청
@@ -296,10 +280,7 @@ public class ActionMap {
         Article article = new Article(userId, imgFileName, content);
         int articleId = db.addArticle(article);
 
-        Response rsp = new Response();
-        rsp.resultCode = ResultCode.FOUND;
-        rsp.header.add("Location: /article?articleId=" + articleId);
-        return rsp;
+        return Response.redirect("/article?articleId=" + articleId);
     }
 
     private Response articlePage(Request req) {
@@ -308,10 +289,7 @@ public class ActionMap {
 
         if (articleId == 0) {
             // TODO 존재하지 않는 article
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.FOUND;
-            rsp.header.add("Location: /index.html");
-            return rsp;
+            return Response.redirect("/index.html");
         } else {
             Article article = db.findArticleById(articleId);
             Map<String, String> variables = new HashMap<>();
