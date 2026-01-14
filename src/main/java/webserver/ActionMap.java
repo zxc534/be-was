@@ -129,14 +129,19 @@ public class ActionMap {
         }
     }
 
-    private String getUserIdFromCookie(Request req) {
-        String userId = null;
+    private String getSidFromCookie(Request req) {
+        String sid = null;
         String cookieVal = req.getHeader("cookie");
         if (cookieVal != null) {
             Map<String, String> cookie = Util.parseParams(cookieVal);
-            String sid = cookie.get("sid");
-            userId = db.findUserIdBySid(sid);
+            sid = cookie.get("sid");
         }
+        return sid;
+    }
+
+    private String getUserIdFromCookie(Request req) {
+        String sid = getSidFromCookie(req);
+        String userId = db.findUserIdBySid(sid);
         return (userId == null) ? "" : userId;
     }
 
