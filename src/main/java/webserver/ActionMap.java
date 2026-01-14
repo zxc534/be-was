@@ -94,7 +94,7 @@ public class ActionMap {
                     <a class="btn btn_contained btn_size_s" href="/write">글쓰기</a>
                 </li>
                 <li class="header__menu__item">
-                    <a class="btn btn_ghost btn_size_s" href="/logout">로그아웃</a>
+                    <a class="btn btn_ghost btn_size_s" href="/user/logout">로그아웃</a>
                 </li>
                 """, userId);
             variables.put("headerMenu", headerMenuForLoginUser);
