@@ -222,7 +222,15 @@ public class ActionMap {
     }
 
     private Response logoutUser(Request req) {
+        String sid = getSidFromCookie(req);
+        if (sid != null) {
+            db.deleteSession(sid);
+        }
 
+        Response rsp = new Response();
+        rsp.resultCode = ResultCode.FOUND;
+        rsp.header.add("Location: /");
+        return rsp;
     }
 
     private Response createArticle(Request req) {
