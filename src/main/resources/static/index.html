@@ -12,26 +12,10 @@
       <header class="header">
         <a href="/"><img src="./img/signiture.svg" /></a>
         <ul class="header__menu">
-          <li class="header__menu__item">
-            <a class="post__account__nickname" href="/mypage">{userId}</a>
-          </li>
-          <li class="header__menu__item">
-            <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
-          </li>
-          <li class="header__menu__item">
-            <a class="btn btn_ghost btn_size_s" href="/registration">
-              회원 가입
-            </a>
-          </li>
+         {headerMenu}
         </ul>
       </header>
       <div class="wrapper">
-        <div class="article-list">
-        {articleList}
-        </div>
-        <div>
-          <a class="btn btn_contained btn_size_s" href="/write">글쓰기</a>
-        </div>
       </div>
     </div>
   </body>

@@ -73,22 +73,32 @@ public class ActionMap {
     private Response mainPage(Request req) {
         String userId = getUserIdFromCookie(req);
 
-        // build articles html element
-        Collection<Article> articles = db.findAllArticles();
-        StringBuilder sb = new StringBuilder();
-//        for (Article a : articles) {
-//            sb.append(String.format("""
-//                    <div class="article-item">
-//                        <a class="article-title" href="/article?articleId=%d">%s</a>
-//                        <span class="article-author">%s</span>
-//                    </div>""", a.getArticleId(), a .getTitle(), a.getUserId()));
-//        }
-
-        String articleList = sb.toString();
-
         Map<String, String> variables = new HashMap<>();
-        variables.put("userId", userId);
-        variables.put("articleList", articleList.isEmpty() ? "작성글이 없습니다." : articleList);
+
+        if (userId.isEmpty()) {
+            String headerMenuDefault = """
+                <li class="header__menu__item">
+                    <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
+                </li>
+                <li class="header__menu__item">
+                    <a class="btn btn_ghost btn_size_s" href="/registration">회원 가입</a>
+                </li>
+                """;
+            variables.put("headerMenu", headerMenuDefault);
+        } else {
+            String headerMenuForLoginUser = String.format("""
+                <li class="header__menu__item">
+                  <a class="post__account__nickname" href="/mypage">안녕하세요, %s</a>
+                </li>
+                <li class="header__menu__item">
+                    <a class="btn btn_contained btn_size_s" href="/write">글쓰기</a>
+                </li>
+                <li class="header__menu__item">
+                    <a class="btn btn_ghost btn_size_s" href="/logout">로그아웃</a>
+                </li>
+                """, userId);
+            variables.put("headerMenu", headerMenuForLoginUser);
+        }
 
         Response rsp = new Response();
         rsp.resultCode = ResultCode.OK;
