@@ -15,7 +15,7 @@ public class WebServer {
     private static final int DEFAULT_PORT = 8080;
 
     //private static final Database db = new Memorydb();
-    private static final Database db = new H2db();
+    public static final Database db = new H2db();
 
     public static void main(String args[]) throws Exception {
         int port = 0;

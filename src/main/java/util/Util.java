@@ -1,5 +1,8 @@
 package util;
 
+import http.Request;
+import webserver.WebServer;
+
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -40,5 +43,21 @@ public final class Util {
         }
 
         return params;
+    }
+
+    public static String getSidFromCookie(Request req) {
+        String sid = null;
+        String cookieVal = req.getHeader("cookie");
+        if (cookieVal != null) {
+            Map<String, String> cookie = Util.parseParams(cookieVal);
+            sid = cookie.get("sid");
+        }
+        return sid;
+    }
+
+    public static String getUserIdFromCookie(Request req) {
+        String sid = Util.getSidFromCookie(req);
+        String userId = WebServer.db.findUserIdBySid(sid);
+        return (userId == null) ? "" : userId;
     }
 }

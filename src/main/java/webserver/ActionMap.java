@@ -1,5 +1,6 @@
 package webserver;
 
+import action.PageActions;
 import db.Database;
 import http.ContentType;
 import http.Request;
@@ -29,13 +30,15 @@ public class ActionMap {
     public ActionMap(Database db) {
         this.db = db;
 
+        PageActions pageActions = new PageActions();
+
         // 이곳에서 액션을 정의
-        GET.put("/", this::mainPage);
-        GET.put("/main", this::mainPage);
-        GET.put("/index.html", this::mainPage);
-        GET.put("/mypage", this::myPage);
-        GET.put("/write", this::writePage);
-        GET.put("/article", this::articlePage);
+        GET.put("/", pageActions::mainPage);
+        GET.put("/main", pageActions::mainPage);
+        GET.put("/index.html", pageActions::mainPage);
+        GET.put("/mypage", pageActions::myPage);
+        GET.put("/write", pageActions::writePage);
+        GET.put("/article", pageActions::articlePage);
         GET.put("/user/logout", this::logoutUser);
 
         POST.put("/user/create", this::createUser);
@@ -49,95 +52,6 @@ public class ActionMap {
 
     public Function<Request, Response> POST(String path) {
         return POST.get(path);
-    }
-
-    private Response writePage(Request req) {
-        String userId = getUserIdFromCookie(req);
-
-        if (userId.isEmpty()) {
-            // 로그인하지 않은 사용자
-            return Response.redirect("/login");
-        } else {
-            // 로그인한 사용자
-            // TODO 불필요한 DynamicHtmlLoader 사용
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.OK;
-            rsp.body = DynamicHtmlLoader.load("./static/article/write.html", null);
-            rsp.contentType = ContentType.HTML;
-            return rsp;
-        }
-    }
-
-    private Response mainPage(Request req) {
-        String userId = getUserIdFromCookie(req);
-
-        Map<String, String> variables = new HashMap<>();
-
-        if (userId.isEmpty()) {
-            String headerMenuDefault = """
-                <li class="header__menu__item">
-                    <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
-                </li>
-                <li class="header__menu__item">
-                    <a class="btn btn_ghost btn_size_s" href="/registration">회원 가입</a>
-                </li>
-                """;
-            variables.put("headerMenu", headerMenuDefault);
-        } else {
-            String headerMenuForLoginUser = String.format("""
-                <li class="header__menu__item">
-                  <a class="post__account__nickname" href="/mypage">안녕하세요, %s님</a>
-                </li>
-                <li class="header__menu__item">
-                    <a class="btn btn_contained btn_size_s" href="/write">글쓰기</a>
-                </li>
-                <li class="header__menu__item">
-                    <a class="btn btn_ghost btn_size_s" href="/user/logout">로그아웃</a>
-                </li>
-                """, userId);
-            variables.put("headerMenu", headerMenuForLoginUser);
-        }
-
-        Response rsp = new Response();
-        rsp.resultCode = ResultCode.OK;
-        rsp.body = DynamicHtmlLoader.load("./static/index.html", variables);
-        rsp.contentType = ContentType.HTML;
-
-        return rsp;
-    }
-
-    private Response myPage(Request req) {
-        String userId = getUserIdFromCookie(req);
-
-        if (userId.isEmpty()) {
-            return Response.redirect("/login");
-        } else {
-            Map<String, String> variables = new HashMap<>();
-            variables.put("userId", userId);
-
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.OK;
-            rsp.body = DynamicHtmlLoader.load("./static/mypage/index.html", variables);
-            rsp.contentType = ContentType.HTML;
-
-            return rsp;
-        }
-    }
-
-    private String getSidFromCookie(Request req) {
-        String sid = null;
-        String cookieVal = req.getHeader("cookie");
-        if (cookieVal != null) {
-            Map<String, String> cookie = Util.parseParams(cookieVal);
-            sid = cookie.get("sid");
-        }
-        return sid;
-    }
-
-    private String getUserIdFromCookie(Request req) {
-        String sid = getSidFromCookie(req);
-        String userId = db.findUserIdBySid(sid);
-        return (userId == null) ? "" : userId;
     }
 
     private Response createUser(Request req) {
@@ -229,7 +143,7 @@ public class ActionMap {
     }
 
     private Response logoutUser(Request req) {
-        String sid = getSidFromCookie(req);
+        String sid = Util.getSidFromCookie(req);
         if (sid != null) {
             db.deleteSession(sid);
         }
@@ -238,7 +152,7 @@ public class ActionMap {
     }
 
     private Response createArticle(Request req) {
-        String userId = getUserIdFromCookie(req);
+        String userId = Util.getUserIdFromCookie(req);
 
         if (userId.isEmpty()) {
             // 로그인되지 않은 요청 -> 로그인 페이지로 리다이렉트
@@ -290,27 +204,5 @@ public class ActionMap {
         int articleId = db.addArticle(article);
 
         return Response.redirect("/article?articleId=" + articleId);
-    }
-
-    private Response articlePage(Request req) {
-        // TODO 임시 아티클 페이지
-        int articleId = Integer.parseInt(req.params.getOrDefault("articleId", "0"));
-
-        if (articleId == 0) {
-            // TODO 존재하지 않는 article
-            return Response.redirect("/index.html");
-        } else {
-            Article article = db.findArticleById(articleId);
-            Map<String, String> variables = new HashMap<>();
-            variables.put("userId", article.getUserId());
-            variables.put("content", article.getContent());
-            variables.put("imgFileName", "/img/article/" + article.getImgFileName());
-
-            Response rsp = new Response();
-            rsp.resultCode = ResultCode.OK;
-            rsp.body = DynamicHtmlLoader.load("./static/article/index.html", variables);
-            rsp.contentType = ContentType.HTML;
-            return rsp;
-        }
     }
 }
