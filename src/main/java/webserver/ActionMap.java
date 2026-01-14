@@ -88,7 +88,7 @@ public class ActionMap {
         } else {
             String headerMenuForLoginUser = String.format("""
                 <li class="header__menu__item">
-                  <a class="post__account__nickname" href="/mypage">안녕하세요, %s</a>
+                  <a class="post__account__nickname" href="/mypage">안녕하세요, %s님</a>
                 </li>
                 <li class="header__menu__item">
                     <a class="btn btn_contained btn_size_s" href="/write">글쓰기</a>
@@ -160,7 +160,6 @@ public class ActionMap {
 
             User user = new User(userId, password, name, email);
             db.addUser(user);
-            printAllUsers();
 
             // 리다이렉트 응답
             Response rsp = new Response();
@@ -214,13 +213,6 @@ public class ActionMap {
             // 로그인 처리중 에러 발생
             logger.error("Failed to login", e);
             return new Response(ResultCode.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void printAllUsers() {
-        logger.debug("==== USERS ====");
-        for (User user : db.findAll()) {
-            logger.debug(user.toString());
         }
     }
 
