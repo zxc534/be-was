@@ -49,14 +49,14 @@ public final class Util {
         String sid = null;
         String cookieVal = req.getHeader("cookie");
         if (cookieVal != null) {
-            Map<String, String> cookie = Util.parseParams(cookieVal);
+            Map<String, String> cookie = parseParams(cookieVal);
             sid = cookie.get("sid");
         }
         return sid;
     }
 
     public static String getUserIdFromCookie(Request req) {
-        String sid = Util.getSidFromCookie(req);
+        String sid = getSidFromCookie(req);
         String userId = WebServer.db.findUserIdBySid(sid);
         return (userId == null) ? "" : userId;
     }
