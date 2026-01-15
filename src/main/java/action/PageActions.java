@@ -49,7 +49,16 @@ public class PageActions {
             variables.put("headerMenu", headerMenuForLoginUser);
         }
 
-        Article article = WebServer.db.findLatestArticle();
+        // 메인 페이지, Article 페이지 분기
+        String articleIdStr = req.params.getOrDefault("articleId", "0");
+        int articleId = Integer.parseInt(articleIdStr);
+        Article article;
+
+        if (articleId == 0) {
+            article = WebServer.db.findLatestArticle();
+        } else {
+            article = WebServer.db.findArticleById(articleId);
+        }
 
         if (article == null) {
             variables.put("article", "작성된 글이 없습니다😭😭😭");
@@ -90,11 +99,11 @@ public class PageActions {
                 }
 
                 if (comments.size() > 3) {
-                    sb.append("<form action=\"/article?articleId=").append(article.getArticleId()).append("&showAllComments=true\" method=\"get\">");
-                    sb.append("<button id=\"show-all-btn\" class=\"btn btn_ghost btn_size_m\" type=\"submit\">");
+                    sb.append("<a href=\"/article?articleId=").append(article.getArticleId()).append("&showAllComments=true\">");
+                    sb.append("<button id=\"show-all-btn\" class=\"btn btn_ghost btn_size_m\">");
                     sb.append("모든 댓글 보기(").append(comments.size()).append("개)");
                     sb.append("</button>");
-                    sb.append("</form>");
+                    sb.append("</a>");
                 }
             }
             String commentsHtml = sb.toString();

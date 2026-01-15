@@ -36,10 +36,10 @@ public class ActionMap {
         GET.put("/", pageActions::mainPage);
         GET.put("/main", pageActions::mainPage);
         GET.put("/index.html", pageActions::mainPage);
+        GET.put("/article", pageActions::mainPage);
         GET.put("/mypage", pageActions::myPage);
         GET.put("/write", pageActions::writePage);
         GET.put("/comment", pageActions::commentPage);
-        GET.put("/article", pageActions::articlePage);
         GET.put("/user/logout", this::logoutUser);
 
         POST.put("/user/create", this::createUser);
