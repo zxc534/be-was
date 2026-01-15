@@ -325,6 +325,50 @@ public class H2db implements Database {
 
     @Override
     public int increaseLikeCount(int articleId) {
-        return 0;
+        String updateSql = """
+        UPDATE articles
+        SET like_count = like_count + 1
+        WHERE article_id = ?
+        """;
+
+        String selectSql = """
+        SELECT like_count
+        FROM articles
+        WHERE article_id = ?
+        """;
+
+        try (Connection con = getConnection()) {
+            con.setAutoCommit(false);
+
+            try (PreparedStatement ups = con.prepareStatement(updateSql)) {
+                ups.setInt(1, articleId);
+                int affected = ups.executeUpdate();
+                if (affected == 0) {
+                    con.rollback();
+                    return -1; // 해당 article 없음
+                }
+            }
+
+            try (PreparedStatement sps = con.prepareStatement(selectSql)) {
+                sps.setInt(1, articleId);
+                try (ResultSet rs = sps.executeQuery()) {
+                    if (!rs.next()) {
+                        con.rollback();
+                        return -1;
+                    }
+                    int newCount = rs.getInt("like_count");
+                    con.commit();
+                    return newCount;
+                }
+            } catch (Exception e) {
+                con.rollback();
+                throw e;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
