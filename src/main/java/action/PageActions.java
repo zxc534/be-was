@@ -111,8 +111,8 @@ public class PageActions {
                             <button class="post__menu__btn" type="submit">
                               <img src="../img/like.svg" />
                             </button>
-                            </form>
                             <span>%s</span>
+                            </form>
                           </li>
                           <li>
                             <button class="post__menu__btn">
