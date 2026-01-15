@@ -78,29 +78,34 @@ public class PageActions {
             }
 
             Collection<Comment> comments = WebServer.db.findCommentsByArticleId(article.getArticleId());
-            String commentFormat = """
-                    <li class="comment__item">
-                      <div class="comment__item__user">
-                        <img class="comment__item__user__img" />
-                        <p class="comment__item__user__nickname">%s</p>
-                      </div>
-                      <p class="comment__item__article">
-                          %s
-                      </p>
-                    </li>
-                    """;
 
             StringBuilder sb = new StringBuilder();
             boolean showAllComments = req.params.getOrDefault("showAllComments", "false").equals("true");
             if (showAllComments) {
                 for (Comment c : comments) {
-                    sb.append(String.format(commentFormat, c.getUserId(), c.getContent()));
+                    sb.append("<li class=\"comment__item\">")
+                            .append("<div class=\"comment__item__user\">")
+                            .append("<img class=\"comment__item__user__img\" />")
+                            .append("<p class=\"comment__item__user__nickname\">")
+                            .append(c.getUserId())
+                            .append("</p></div>")
+                            .append("<p class=\"comment__item__article\">")
+                            .append(c.getContent())
+                            .append("</p></li>");
                 }
             } else {
                 Iterator<Comment> it = comments.iterator();
                 for (int i = 0; i < 3 && it.hasNext(); i++) {
                     Comment c = it.next();
-                    sb.append(String.format(commentFormat, c.getUserId(), c.getContent()));
+                    sb.append("<li class=\"comment__item\">")
+                            .append("<div class=\"comment__item__user\">")
+                            .append("<img class=\"comment__item__user__img\" />")
+                            .append("<p class=\"comment__item__user__nickname\">")
+                            .append(c.getUserId())
+                            .append("</p></div>")
+                            .append("<p class=\"comment__item__article\">")
+                            .append(c.getContent())
+                            .append("</p></li>");
                 }
 
                 if (comments.size() > 3) {
