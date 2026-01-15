@@ -5,12 +5,15 @@ import http.Request;
 import http.Response;
 import http.ResultCode;
 import model.Article;
+import model.Comment;
 import util.Util;
 import webserver.DynamicHtmlLoader;
 import webserver.WebServer;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class PageActions {
@@ -58,6 +61,42 @@ public class PageActions {
             } else {
                 likeCountStr = String.valueOf(likeCount);
             }
+
+            Collection<Comment> comments = WebServer.db.findCommentsByArticleId(article.getArticleId());
+            String commentFormat = """
+                    <li class="comment__item">
+                      <div class="comment__item__user">
+                        <img class="comment__item__user__img" />
+                        <p class="comment__item__user__nickname">%s</p>
+                      </div>
+                      <p class="comment__item__article">
+                          %s
+                      </p>
+                    </li>
+                    """;
+
+
+            StringBuilder sb = new StringBuilder();
+            boolean showAllComments = req.params.getOrDefault("showAllComments", "false").equals("true");
+            if (showAllComments) {
+                for (Comment c : comments) {
+                    sb.append(String.format(commentFormat, c.getUserId(), c.getContent()));
+                }
+            } else {
+                Iterator<Comment> it = comments.iterator();
+                for (int i = 0; i < 3 && it.hasNext(); i++) {
+                    Comment c = it.next();
+                    sb.append(String.format(commentFormat, c.getUserId(), c.getContent()));
+                }
+
+                if (comments.size() > 3) {
+                    sb.append("<button id=\"show-all-btn\" class=\"btn btn_ghost btn_size_m\">");
+                    sb.append("모든 댓글 보기(").append(comments.size()).append("개)");
+                    sb.append("</button>");
+                }
+            }
+            String commentsHtml = sb.toString();
+
             String articleHtml = String.format("""
                     <div class="post">
                       <div class="post__account">
@@ -79,6 +118,7 @@ public class PageActions {
                             <button class="post__menu__btn">
                               <img src="../img/comment.svg" />
                             </button>
+                            <span>%s</span>
                           </li>
                         </ul>
                         <button class="post__menu__btn">
@@ -90,6 +130,7 @@ public class PageActions {
                       </p>
                     </div>
                     <ul class="comment">
+                    %s
                     </ul>
                     <nav class="nav">
                       <ul class="nav__menu">
@@ -116,7 +157,7 @@ public class PageActions {
                         </li>
                       </ul>
                     </nav>
-                    """, article.getUserId(), article.getImgFileName(), article.getArticleId(), likeCountStr, article.getContent(), article.getArticleId());
+                    """, article.getUserId(), article.getImgFileName(), article.getArticleId(), likeCountStr, comments.size(), article.getContent(), commentsHtml, article.getArticleId());
             variables.put("article", articleHtml);
         }
 
@@ -193,7 +234,8 @@ public class PageActions {
             // articleId 값이 올바르지 않은 경우
             // 숫자가 아님, 0 보다 작은 경우
             articleId = Integer.parseInt(req.params.getOrDefault("articleId", ""));
-        } catch (NumberFormatException ignore) {}
+        } catch (NumberFormatException ignore) {
+        }
 
         if (userId.isEmpty()) {
             return Response.redirect("/login");
@@ -203,9 +245,9 @@ public class PageActions {
             failRsp.contentType = ContentType.TXT;
             failRsp.body = "articleId 값이 이상한데요?".getBytes(StandardCharsets.UTF_8);
             return failRsp;
-        } else  {
+        } else {
             Map<String, String> variables = new HashMap<>();
-            variables.put("requestPath", "/comment?articleId="+articleId);
+            variables.put("requestPath", "/comment?articleId=" + articleId);
 
             Response rsp = new Response();
             rsp.resultCode = ResultCode.OK;
