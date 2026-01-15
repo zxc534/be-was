@@ -17,26 +17,36 @@ public class DynamicHtmlLoader {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     private static final Pattern TOKEN_PATTERN = Pattern.compile("\\{([^{}]+)\\}");
 
+    private static final Map<String, String> TEMPLATE_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+
     private DynamicHtmlLoader() {}
 
-    public static byte[] load(String filePath, Map<String, String> variable) {
+    public static byte[] load(String filePath, Map<String, String> variables) {
         try {
-            URL resource = Thread.currentThread().getContextClassLoader().getResource(filePath);
-            if (resource == null) {
-                logger.error("Resource not found: {}", filePath);
-                return new byte[]{};
-            }
+            String html = TEMPLATE_CACHE.computeIfAbsent(filePath, DynamicHtmlLoader::readTemplate);
+            if (html == null) return new byte[]{};
 
-            String html;
-            try (InputStream is = resource.openStream()) {
-                html = new String(is.readAllBytes(), DEFAULT_CHARSET);
-            }
-            
-            String rendered = replaceTokens(html, variable);
+            String rendered = replaceTokens(html, variables);
             return rendered.getBytes(DEFAULT_CHARSET);
         } catch (Exception e) {
             logger.error("Failed to load/render: {}", filePath, e);
             return new byte[]{};
+        }
+    }
+
+    private static String readTemplate(String filePath) {
+        try {
+            URL resource = Thread.currentThread().getContextClassLoader().getResource(filePath);
+            if (resource == null) {
+                logger.error("Resource not found: {}", filePath);
+                return null;
+            }
+            try (InputStream is = resource.openStream()) {
+                return new String(is.readAllBytes(), DEFAULT_CHARSET);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to read template: {}", filePath, e);
+            return null;
         }
     }
 
