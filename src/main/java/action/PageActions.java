@@ -62,7 +62,12 @@ public class PageActions {
         }
 
         if (article == null) {
-            variables.put("article", "작성된 글이 없습니다😭😭😭");
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.OK;
+            rsp.body = DynamicHtmlLoader.load("./static/empty.html", variables);
+            rsp.contentType = ContentType.HTML;
+
+            return rsp;
         } else {
             int likeCount = article.getLikeCount();
             String likeCountStr;
@@ -110,123 +115,36 @@ public class PageActions {
 
             String prevArticleHtml = "";
             if (1 == articleId) {
-                prevArticleHtml = """
-                    <li class="nav__menu__item">
-                          <a class="nav__menu__item__btn disable">
-                            <img
-                              class="nav__menu__item__img"
-                              src="../img/ci_chevron-left.svg"
-                            />
-                            이전 글
-                          </a>
-                        </li>
-                    """;
+                prevArticleHtml = "<a class=\"nav__menu__item__btn disable\">";
             } else {
-                prevArticleHtml = String.format("""
-                    <li class="nav__menu__item">
-                          <a class="nav__menu__item__btn" href="/article?articleId=%d">
-                            <img
-                              class="nav__menu__item__img"
-                              src="../img/ci_chevron-left.svg"
-                            />
-                            이전 글
-                          </a>
-                        </li>
-                    """, articleId -1);
+                prevArticleHtml = "<a class=\"nav__menu__item__btn\" href=\"/article?articleId=" + (articleId-1) + "\">";
             }
 
             int numArticles = WebServer.db.countArticles();
             String nextArticleHtml = "";
             if (numArticles == articleId) {
-                nextArticleHtml = """
-                    <li class="nav__menu__item">
-                          <a class="nav__menu__item__btn disable">
-                            다음 글
-                            <img
-                              class="nav__menu__item__img"
-                              src="../img/ci_chevron-right.svg"
-                            />
-                          </a>
-                        </li>
-                    """;
+                nextArticleHtml = "<a class=\"nav__menu__item__btn disable\">";
             } else {
-                nextArticleHtml = String.format("""
-                    <li class="nav__menu__item">
-                          <a class="nav__menu__item__btn" href="/article?articleId=%d">
-                            다음 글
-                            <img
-                              class="nav__menu__item__img"
-                              src="../img/ci_chevron-right.svg"
-                            />
-                          </a>
-                        </li>
-                    """, articleId + 1);
+                nextArticleHtml = "<a class=\"nav__menu__item__btn\" href=\"/article?articleId=" + (articleId+1) + "\">";
             }
 
-            String articleHtml = String.format("""
-                    <div class="post">
-                      <div class="post__account">
-                        <img class="post__account__img" />
-                        <p class="post__account__nickname">%s</p>
-                      </div>
-                      <img class="post__img" src="img/article/%s">
-                      <div class="post__menu">
-                        <ul class="post__menu__personal">
-                          <li>
-                            <form action="/article/like?articleId=%s" method="post">
-                            <button class="post__menu__btn" type="submit">
-                              <img src="../img/like.svg" />
-                            </button>
-                            <span>%s</span>
-                            </form>
-                          </li>
-                          <li>
-                            <button class="post__menu__btn">
-                              <img src="../img/comment.svg" />
-                            </button>
-                            <span>%s</span>
-                          </li>
-                        </ul>
-                        <button class="post__menu__btn">
-                          <img src="../img/bookMark.svg" />
-                        </button>
-                      </div>
-                      <p class="post__article">
-                        %s
-                      </p>
-                    </div>
-                    <ul class="comment">
-                    %s
-                    </ul>
-                    <nav class="nav">
-                      <ul class="nav__menu">
-                        %s
-                        <li class="nav__menu__item">
-                          <a class="btn btn_ghost btn_size_m" href="/comment?articleId=%d">댓글 작성</a>
-                        </li>
-                        %s
-                      </ul>
-                    </nav>
-                    """,
-                    article.getUserId(),
-                    article.getImgFileName(),
-                    article.getArticleId(),
-                    likeCountStr,
-                    comments.size(),
-                    article.getContent(),
-                    commentsHtml,
-                    prevArticleHtml,
-                    article.getArticleId(),
-                    nextArticleHtml);
-            variables.put("article", articleHtml);
+            variables.put("userId", article.getUserId());
+            variables.put("articleImgFileName", article.getImgFileName());
+            variables.put("articleId", String.valueOf(article.getArticleId()));
+            variables.put("likeCount", likeCountStr);
+            variables.put("commentCount", String.valueOf(comments.size()));
+            variables.put("content", article.getContent());
+            variables.put("commentsHtml", commentsHtml);
+            variables.put("prevArticleHtml", prevArticleHtml);
+            variables.put("nextArticleHtml", nextArticleHtml);
+
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.OK;
+            rsp.body = DynamicHtmlLoader.load("./static/index.html", variables);
+            rsp.contentType = ContentType.HTML;
+
+            return rsp;
         }
-
-        Response rsp = new Response();
-        rsp.resultCode = ResultCode.OK;
-        rsp.body = DynamicHtmlLoader.load("./static/index.html", variables);
-        rsp.contentType = ContentType.HTML;
-
-        return rsp;
     }
 
     public Response myPage(Request req) {

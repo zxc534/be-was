@@ -16,7 +16,59 @@
         </ul>
       </header>
       <div class="wrapper">
-        {article}
+        <div class="post">
+          <div class="post__account">
+            <img class="post__account__img" />
+            <p class="post__account__nickname">{userId}</p>
+          </div>
+          <img class="post__img" src="img/article/{articleImgFileName}">
+          <div class="post__menu">
+            <ul class="post__menu__personal">
+              <li>
+                <form action="/article/like?articleId={articleId}" method="post">
+                  <button class="post__menu__btn" type="submit">
+                    <img src="../img/like.svg" />
+                  </button>
+                  <span>{likeCount}</span>
+                </form>
+              </li>
+              <li>
+                <button class="post__menu__btn">
+                  <img src="../img/comment.svg" />
+                </button>
+                <span>{commentCount}</span>
+              </li>
+            </ul>
+            <button class="post__menu__btn">
+              <img src="../img/bookMark.svg" />
+            </button>
+          </div>
+          <p class="post__article">
+            {content}
+          </p>
+        </div>
+        <ul class="comment">
+          {commentsHtml}
+        </ul>
+        <nav class="nav">
+          <ul class="nav__menu">
+            <li class="nav__menu__item">
+              {prevArticleHtml}
+              <img class="nav__menu__item__img" src="../img/ci_chevron-left.svg"/>
+              이전 글
+              </a>
+            </li>
+            <li class="nav__menu__item">
+              <a class="btn btn_ghost btn_size_m" href="/comment?articleId={articleId}">댓글 작성</a>
+            </li>
+            <li class="nav__menu__item">
+              {nextArticleHtml}
+              다음 글
+              <img class="nav__menu__item__img" src="../img/ci_chevron-right.svg"/>
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
   </body>
