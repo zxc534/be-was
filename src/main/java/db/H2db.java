@@ -444,4 +444,20 @@ public class H2db implements Database {
         }
     }
 
+    @Override
+    public int countArticles() {
+        String sql = "SELECT COUNT(*) FROM articles";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            rs.next();
+            return rs.getInt(1);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

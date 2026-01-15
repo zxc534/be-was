@@ -68,4 +68,6 @@ public class Memorydb implements Database {
     public void addComment(int articleId, String userId, String content) {}
 
     public Collection<Comment> findCommentsByArticleId(int articleId) { return List.of(); }
+
+    public int countArticles() { return 0; }
 }

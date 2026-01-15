@@ -56,6 +56,7 @@ public class PageActions {
 
         if (articleId == 0) {
             article = WebServer.db.findLatestArticle();
+            articleId = article.getArticleId();
         } else {
             article = WebServer.db.findArticleById(articleId);
         }
@@ -84,7 +85,6 @@ public class PageActions {
                     </li>
                     """;
 
-
             StringBuilder sb = new StringBuilder();
             boolean showAllComments = req.params.getOrDefault("showAllComments", "false").equals("true");
             if (showAllComments) {
@@ -107,6 +107,61 @@ public class PageActions {
                 }
             }
             String commentsHtml = sb.toString();
+
+            String prevArticleHtml = "";
+            if (1 == articleId) {
+                prevArticleHtml = """
+                    <li class="nav__menu__item">
+                          <a class="nav__menu__item__btn disable">
+                            <img
+                              class="nav__menu__item__img"
+                              src="../img/ci_chevron-left.svg"
+                            />
+                            이전 글
+                          </a>
+                        </li>
+                    """;
+            } else {
+                prevArticleHtml = String.format("""
+                    <li class="nav__menu__item">
+                          <a class="nav__menu__item__btn" href="/article?articleId=%d">
+                            <img
+                              class="nav__menu__item__img"
+                              src="../img/ci_chevron-left.svg"
+                            />
+                            이전 글
+                          </a>
+                        </li>
+                    """, articleId -1);
+            }
+
+            int numArticles = WebServer.db.countArticles();
+            String nextArticleHtml = "";
+            if (numArticles == articleId) {
+                nextArticleHtml = """
+                    <li class="nav__menu__item">
+                          <a class="nav__menu__item__btn disable">
+                            다음 글
+                            <img
+                              class="nav__menu__item__img"
+                              src="../img/ci_chevron-right.svg"
+                            />
+                          </a>
+                        </li>
+                    """;
+            } else {
+                nextArticleHtml = String.format("""
+                    <li class="nav__menu__item">
+                          <a class="nav__menu__item__btn" href="/article?articleId=%d">
+                            다음 글
+                            <img
+                              class="nav__menu__item__img"
+                              src="../img/ci_chevron-right.svg"
+                            />
+                          </a>
+                        </li>
+                    """, articleId + 1);
+            }
 
             String articleHtml = String.format("""
                     <div class="post">
@@ -145,30 +200,24 @@ public class PageActions {
                     </ul>
                     <nav class="nav">
                       <ul class="nav__menu">
-                        <li class="nav__menu__item">
-                          <a class="nav__menu__item__btn" href="">
-                            <img
-                              class="nav__menu__item__img"
-                              src="../img/ci_chevron-left.svg"
-                            />
-                            이전 글
-                          </a>
-                        </li>
+                        %s
                         <li class="nav__menu__item">
                           <a class="btn btn_ghost btn_size_m" href="/comment?articleId=%d">댓글 작성</a>
                         </li>
-                        <li class="nav__menu__item">
-                          <a class="nav__menu__item__btn" href="">
-                            다음 글
-                            <img
-                              class="nav__menu__item__img"
-                              src="../img/ci_chevron-right.svg"
-                            />
-                          </a>
-                        </li>
+                        %s
                       </ul>
                     </nav>
-                    """, article.getUserId(), article.getImgFileName(), article.getArticleId(), likeCountStr, comments.size(), article.getContent(), commentsHtml, article.getArticleId());
+                    """,
+                    article.getUserId(),
+                    article.getImgFileName(),
+                    article.getArticleId(),
+                    likeCountStr,
+                    comments.size(),
+                    article.getContent(),
+                    commentsHtml,
+                    prevArticleHtml,
+                    article.getArticleId(),
+                    nextArticleHtml);
             variables.put("article", articleHtml);
         }
 

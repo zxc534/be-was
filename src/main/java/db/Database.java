@@ -32,4 +32,6 @@ public interface Database {
     void addComment(int articleId, String userId, String content);
 
     Collection<Comment> findCommentsByArticleId(int articleId);
+
+    int countArticles();
 }
