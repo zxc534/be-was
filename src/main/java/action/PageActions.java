@@ -90,9 +90,11 @@ public class PageActions {
                 }
 
                 if (comments.size() > 3) {
-                    sb.append("<button id=\"show-all-btn\" class=\"btn btn_ghost btn_size_m\">");
+                    sb.append("<form action=\"/article?articleId=").append(article.getArticleId()).append("&showAllComments=true\" method=\"get\">");
+                    sb.append("<button id=\"show-all-btn\" class=\"btn btn_ghost btn_size_m\" type=\"submit\">");
                     sb.append("모든 댓글 보기(").append(comments.size()).append("개)");
                     sb.append("</button>");
+                    sb.append("</form>");
                 }
             }
             String commentsHtml = sb.toString();
