@@ -115,8 +115,6 @@ public class H2db implements Database {
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, userId);
-            ps.execute();
-
             ResultSet rs = ps.executeQuery();
             // TODO user 조회 실패 null 반환 괜찮은지 확인
             if (!rs.next()) return null;
