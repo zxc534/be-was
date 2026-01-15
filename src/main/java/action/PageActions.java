@@ -190,9 +190,14 @@ public class PageActions {
         if (userId.isEmpty()) {
             return Response.redirect("/login");
         } else {
+            Map<String, String> variables = new HashMap<>();
+
+            int articleId = 1;
+            variables.put("requestPath", "/comment?articleId="+articleId);
+
             Response rsp = new Response();
             rsp.resultCode = ResultCode.OK;
-            rsp.body = DynamicHtmlLoader.load("./static/comment/index.html", null);
+            rsp.body = DynamicHtmlLoader.load("./static/comment/index.html", variables);
             rsp.contentType = ContentType.HTML;
             return rsp;
         }
