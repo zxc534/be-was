@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class H2db implements Database {
-    private static final String URL = "jdbc:h2:./data/appdb;";
+    private static final String URL = "jdbc:h2:./data/appdb;DB_CLOSE_DELAY=-1;";
     private static final String USER = "sa";
     private static final String PASS = "";
 
