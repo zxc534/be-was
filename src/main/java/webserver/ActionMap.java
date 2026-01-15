@@ -44,6 +44,7 @@ public class ActionMap {
         POST.put("/user/create", this::createUser);
         POST.put("/user/login", this::loginUser);
         POST.put("/article", this::createArticle);
+        POST.put("/article/like", this::likeArticle);
     }
 
     public Function<Request, Response> GET(String path) {
@@ -204,5 +205,10 @@ public class ActionMap {
         int articleId = db.addArticle(article);
 
         return Response.redirect("/article?articleId=" + articleId);
+    }
+
+    private Response likeArticle(Request req) {
+
+        return null;
     }
 }

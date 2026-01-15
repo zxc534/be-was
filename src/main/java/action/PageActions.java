@@ -50,6 +50,13 @@ public class PageActions {
         if (article == null) {
             variables.put("article", "작성된 글이 없습니다😭😭😭");
         } else {
+            int likeCount = article.getLikeCount();
+            String likeCountStr;
+            if (likeCount >= 999) {
+                likeCountStr = "999+";
+            } else {
+                likeCountStr = String.valueOf(likeCount);
+            }
             String articleHtml = String.format("""
                     <div class="post">
                       <div class="post__account">
@@ -60,10 +67,12 @@ public class PageActions {
                       <div class="post__menu">
                         <ul class="post__menu__personal">
                           <li>
-                            <button class="post__menu__btn">
+                            <form action="/article/like?articleId=%s" method="post">
+                            <button class="post__menu__btn" type="submit">
                               <img src="../img/like.svg" />
-                              <span>%s</span>
                             </button>
+                            </form>
+                            <span>%s</span>
                           </li>
                           <li>
                             <button class="post__menu__btn">
@@ -106,7 +115,7 @@ public class PageActions {
                         </li>
                       </ul>
                     </nav>
-                    """, article.getUserId(), article.getImgFileName(), article.getLikeCount(), article.getContent());
+                    """, article.getUserId(), article.getImgFileName(), article.getArticleId(), likeCountStr, article.getContent());
             variables.put("article", articleHtml);
         }
 
