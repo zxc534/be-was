@@ -48,7 +48,8 @@ public class H2db implements Database {
                   article_id INT AUTO_INCREMENT PRIMARY KEY,
                   user_id VARCHAR(50) NOT NULL,
                   img_file_name VARCHAR(255),
-                  content CLOB NOT NULL
+                  content CLOB NOT NULL,
+                  like_count INT NOT NULL DEFAULT 0
                 );
                 """;
 
@@ -235,7 +236,7 @@ public class H2db implements Database {
     @Override
     public Article findArticleById(int articleId) {
         String sql = """
-                SELECT article_id, user_id, img_file_name, content
+                SELECT article_id, user_id, img_file_name, content, like_count
                 FROM ARTICLES
                 WHERE article_id = ?
                 """;
@@ -248,13 +249,13 @@ public class H2db implements Database {
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) return null;
 
+                int gotId = rs.getInt("article_id");
                 String userId = rs.getString("user_id");
                 String imgFileName = rs.getString("img_file_name");
                 String content = rs.getString("content");
+                int likeCount = rs.getInt("like_count");
 
-                Article article = new Article(userId, imgFileName, content);
-                article.setArticleId(rs.getInt("article_id"));
-                return article;
+                return new Article(gotId, userId, imgFileName, content, likeCount);
             }
 
         } catch (SQLException e) {
@@ -265,7 +266,7 @@ public class H2db implements Database {
     @Override
     public Article findLatestArticle() {
         String sql = """
-                SELECT article_id, user_id, img_file_name, content
+                SELECT article_id, user_id, img_file_name, content, like_count
                 FROM articles
                 ORDER BY article_id DESC
                 LIMIT 1
@@ -277,13 +278,13 @@ public class H2db implements Database {
 
             if (!rs.next()) return null;
 
+            int gotId = rs.getInt("article_id");
             String userId = rs.getString("user_id");
             String imgFileName = rs.getString("img_file_name");
             String content = rs.getString("content");
+            int likeCount = rs.getInt("like_count");
 
-            Article article = new Article(userId, imgFileName, content);
-            article.setArticleId(rs.getInt("article_id"));
-            return article;
+            return new Article(gotId, userId, imgFileName, content, likeCount);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -293,7 +294,7 @@ public class H2db implements Database {
     @Override
     public Collection<Article> findAllArticles() {
         String sql = """
-                SELECT article_id, user_id, img_file_name, content
+                SELECT article_id, user_id, img_file_name, content, like_count
                 FROM ARTICLES
                 ORDER BY article_id DESC
                 """;
@@ -305,13 +306,13 @@ public class H2db implements Database {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
+                int gotId = rs.getInt("article_id");
                 String userId = rs.getString("user_id");
                 String imgFileName = rs.getString("img_file_name");
                 String content = rs.getString("content");
+                int likeCount = rs.getInt("like_count");
 
-                Article article = new Article(userId, imgFileName, content);
-                article.setArticleId(rs.getInt("article_id"));
-
+                Article article = new Article(gotId, userId, imgFileName, content, likeCount);
                 articles.add(article);
             }
 
@@ -320,5 +321,10 @@ public class H2db implements Database {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public int increaseLikeCount(int articleId) {
+        return 0;
     }
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 
 public class PageActions {
 
+    // TODO page 코드에 html이 넘어오는 것 수정 필요 -> 다른 html을 여러개 정의해놓고 기존 dynamic loader만 사용하여 처리하도록
     public Response mainPage(Request req) {
         String userId = Util.getUserIdFromCookie(req);
 
@@ -55,12 +56,13 @@ public class PageActions {
                         <img class="post__account__img" />
                         <p class="post__account__nickname">%s</p>
                       </div>
-                      <img class="post__img" src=%s>
+                      <img class="post__img" src="img/article/%s">
                       <div class="post__menu">
                         <ul class="post__menu__personal">
                           <li>
                             <button class="post__menu__btn">
                               <img src="../img/like.svg" />
+                              <span>%s</span>
                             </button>
                           </li>
                           <li>
@@ -104,7 +106,7 @@ public class PageActions {
                         </li>
                       </ul>
                     </nav>
-                    """, article.getUserId(), article.getImgFileName(), article.getContent());
+                    """, article.getUserId(), article.getImgFileName(), article.getLikeCount(), article.getContent());
             variables.put("article", articleHtml);
         }
 

@@ -5,11 +5,14 @@ public class Article {
     private String userId;
     private String imgFileName;
     private String content;
+    private int likeCount;
 
-    public Article(String userId, String imgFileName, String content) {
+    public Article(int articleId, String userId, String imgFileName, String content, int likeCount) {
+        this.articleId = articleId;
         this.userId = userId;
         this.imgFileName = imgFileName;
         this.content = content;
+        this.likeCount = likeCount;
     }
 
     public int getArticleId() { return articleId; }
@@ -21,4 +24,6 @@ public class Article {
     public String getImgFileName() { return imgFileName; }
 
     public String getContent() { return content; }
+
+    public int getLikeCount() { return likeCount; }
 }

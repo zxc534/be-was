@@ -200,7 +200,7 @@ public class ActionMap {
         }
 
         String imgFileName = result.getMessage();
-        Article article = new Article(userId, imgFileName, content);
+        Article article = new Article(0, userId, imgFileName, content, 0);
         int articleId = db.addArticle(article);
 
         return Response.redirect("/article?articleId=" + articleId);

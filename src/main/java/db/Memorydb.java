@@ -60,4 +60,6 @@ public class Memorydb implements Database {
     public Collection<Article> findAllArticles() {
         return articles.values();
     }
+
+    public int increaseLikeCount(int articleId) { return 0; }
 }

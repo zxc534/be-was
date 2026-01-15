@@ -25,4 +25,6 @@ public interface Database {
     Article findLatestArticle();
 
     Collection<Article> findAllArticles();
+
+    int increaseLikeCount(int articleId);
 }
