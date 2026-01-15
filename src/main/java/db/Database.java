@@ -1,6 +1,7 @@
 package db;
 
 import model.Article;
+import model.Comment;
 import model.User;
 
 import java.util.Collection;
@@ -27,4 +28,8 @@ public interface Database {
     Collection<Article> findAllArticles();
 
     int increaseLikeCount(int articleId);
+
+    void addComment(int articleId, String userId, String content);
+
+    Collection<Comment> findCommentsByArticleId(int articleId);
 }

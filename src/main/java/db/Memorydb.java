@@ -1,10 +1,12 @@
 package db;
 
 import model.Article;
+import model.Comment;
 import model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Memorydb implements Database {
@@ -62,4 +64,8 @@ public class Memorydb implements Database {
     }
 
     public int increaseLikeCount(int articleId) { return 0; }
+
+    public void addComment(int articleId, String userId, String content) {}
+
+    public Collection<Comment> findCommentsByArticleId(int articleId) { return List.of(); }
 }

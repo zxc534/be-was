@@ -1,6 +1,7 @@
 package db;
 
 import model.Article;
+import model.Comment;
 import model.User;
 import org.h2.tools.Server;
 
@@ -53,11 +54,27 @@ public class H2db implements Database {
                 );
                 """;
 
+        String createComments = """
+                CREATE TABLE IF NOT EXISTS comments (
+                  id INT AUTO_INCREMENT PRIMARY KEY,
+                  article_id INT NOT NULL,
+                  user_id VARCHAR(50) NOT NULL,
+                  content CLOB NOT NULL,
+                  CONSTRAINT fk_comments_article
+                    FOREIGN KEY (article_id) REFERENCES articles(article_id)
+                    ON DELETE CASCADE,
+                  CONSTRAINT fk_comments_user
+                    FOREIGN KEY (user_id) REFERENCES users(user_id)
+                    ON DELETE CASCADE
+                );
+                """;
+
         try (Connection con = getConnection();
              Statement st = con.createStatement()) {
             st.execute(createUsers);
             st.execute(createSessions);
             st.execute(createArticles);
+            st.execute(createComments);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -326,16 +343,16 @@ public class H2db implements Database {
     @Override
     public int increaseLikeCount(int articleId) {
         String updateSql = """
-        UPDATE articles
-        SET like_count = like_count + 1
-        WHERE article_id = ?
-        """;
+                UPDATE articles
+                SET like_count = like_count + 1
+                WHERE article_id = ?
+                """;
 
         String selectSql = """
-        SELECT like_count
-        FROM articles
-        WHERE article_id = ?
-        """;
+                SELECT like_count
+                FROM articles
+                WHERE article_id = ?
+                """;
 
         try (Connection con = getConnection()) {
             con.setAutoCommit(false);
@@ -371,4 +388,60 @@ public class H2db implements Database {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void addComment(int articleId, String userId, String content) {
+        String sql = """
+                INSERT INTO comments (article_id, user_id, content)
+                VALUES (?, ?, ?)
+                """;
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, articleId);
+            ps.setString(2, userId);
+            ps.setString(3, content);
+
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Collection<Comment> findCommentsByArticleId(int articleId) {
+        String sql = """
+                SELECT id, article_id, user_id, content
+                FROM comments
+                WHERE article_id = ?
+                ORDER BY id ASC
+                """;
+
+        List<Comment> comments = new ArrayList<>();
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, articleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    int aId = rs.getInt("article_id");
+                    String uId = rs.getString("user_id");
+                    String c = rs.getString("content");
+
+                    comments.add(new Comment(id, aId, uId, c));
+                }
+            }
+
+            return comments;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
