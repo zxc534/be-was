@@ -46,6 +46,7 @@ public class ActionMap {
         POST.put("/user/login", this::loginUser);
         POST.put("/article", this::createArticle);
         POST.put("/article/like", this::likeArticle);
+        POST.put("/comment", this::createComment);
     }
 
     public Function<Request, Response> GET(String path) {
@@ -220,5 +221,32 @@ public class ActionMap {
          }
 
         return Response.redirect("/article?articleId=" + articleId);
+    }
+
+    private Response createComment(Request req) {
+        String userId = Util.getUserIdFromCookie(req);
+
+        if (userId.isEmpty()) {
+            // 로그인되지 않은 요청 -> 로그인 페이지로 리다이렉트
+            return Response.redirect("/login");
+        }
+
+        // TODO 올바르지 않은 articleId 값이 왔을 때
+        int articleId = Integer.parseInt(req.params.get("articleId"));
+
+        String body = new String(req.body, StandardCharsets.UTF_8);
+        Map<String, String> bodyParams = Util.parseParams(body);
+        String content = bodyParams.getOrDefault("content", "").trim();
+
+        if (content.isEmpty()) {
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.BAD_REQUEST;
+            rsp.contentType = ContentType.TXT;
+            rsp.body = "빈 내용의 댓글은 보내면 안됩니다!".getBytes(StandardCharsets.UTF_8);
+            return rsp;
+        } else {
+            db.addComment(articleId, userId, content);
+            return Response.redirect("/article?articleId=" + articleId);
+        }
     }
 }
