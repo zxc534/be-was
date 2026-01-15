@@ -9,6 +9,7 @@ import util.Util;
 import webserver.DynamicHtmlLoader;
 import webserver.WebServer;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,7 +103,7 @@ public class PageActions {
                           </a>
                         </li>
                         <li class="nav__menu__item">
-                          <a class="btn btn_ghost btn_size_m" href="/comment">댓글 작성</a>
+                          <a class="btn btn_ghost btn_size_m" href="/comment?articleId=%d">댓글 작성</a>
                         </li>
                         <li class="nav__menu__item">
                           <a class="nav__menu__item__btn" href="">
@@ -115,7 +116,7 @@ public class PageActions {
                         </li>
                       </ul>
                     </nav>
-                    """, article.getUserId(), article.getImgFileName(), article.getArticleId(), likeCountStr, article.getContent());
+                    """, article.getUserId(), article.getImgFileName(), article.getArticleId(), likeCountStr, article.getContent(), article.getArticleId());
             variables.put("article", articleHtml);
         }
 
@@ -186,13 +187,24 @@ public class PageActions {
 
     public Response commentPage(Request req) {
         String userId = Util.getUserIdFromCookie(req);
+        int articleId = 0;
+
+        try {
+            // articleId 값이 올바르지 않은 경우
+            // 숫자가 아님, 0 보다 작은 경우
+            articleId = Integer.parseInt(req.params.getOrDefault("articleId", ""));
+        } catch (NumberFormatException ignore) {}
 
         if (userId.isEmpty()) {
             return Response.redirect("/login");
-        } else {
+        } else if (articleId <= 0) {
+            Response failRsp = new Response();
+            failRsp.resultCode = ResultCode.BAD_REQUEST;
+            failRsp.contentType = ContentType.TXT;
+            failRsp.body = "articleId 값이 이상한데요?".getBytes(StandardCharsets.UTF_8);
+            return failRsp;
+        } else  {
             Map<String, String> variables = new HashMap<>();
-
-            int articleId = 1;
             variables.put("requestPath", "/comment?articleId="+articleId);
 
             Response rsp = new Response();
