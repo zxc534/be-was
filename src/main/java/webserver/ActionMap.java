@@ -208,7 +208,16 @@ public class ActionMap {
     }
 
     private Response likeArticle(Request req) {
+        String articleIdStr = req.params.get("articleId");
+        int articleId = Integer.parseInt(articleIdStr);
+        Article article = db.findArticleById(articleId);
+        int likeCount = article.getLikeCount();
+        logger.debug("like: {}", likeCount);
 
-        return null;
+         if (likeCount < 999) {
+             db.increaseLikeCount(articleId);
+         }
+
+        return Response.redirect("/article?articleId=" + articleId);
     }
 }
