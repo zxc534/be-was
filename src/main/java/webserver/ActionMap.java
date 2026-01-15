@@ -38,6 +38,7 @@ public class ActionMap {
         GET.put("/index.html", pageActions::mainPage);
         GET.put("/mypage", pageActions::myPage);
         GET.put("/write", pageActions::writePage);
+        GET.put("/comment", pageActions::commentPage);
         GET.put("/article", pageActions::articlePage);
         GET.put("/user/logout", this::logoutUser);
 

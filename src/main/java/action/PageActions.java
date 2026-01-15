@@ -76,7 +76,7 @@ public class PageActions {
                           </li>
                           <li>
                             <button class="post__menu__btn">
-                              <img src="../img/sendLink.svg" />
+                              <img src="../img/comment.svg" />
                             </button>
                           </li>
                         </ul>
@@ -179,6 +179,20 @@ public class PageActions {
             Response rsp = new Response();
             rsp.resultCode = ResultCode.OK;
             rsp.body = DynamicHtmlLoader.load("./static/article/write.html", null);
+            rsp.contentType = ContentType.HTML;
+            return rsp;
+        }
+    }
+
+    public Response commentPage(Request req) {
+        String userId = Util.getUserIdFromCookie(req);
+
+        if (userId.isEmpty()) {
+            return Response.redirect("/login");
+        } else {
+            Response rsp = new Response();
+            rsp.resultCode = ResultCode.OK;
+            rsp.body = DynamicHtmlLoader.load("./static/comment/index.html", null);
             rsp.contentType = ContentType.HTML;
             return rsp;
         }
